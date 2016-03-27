@@ -33,10 +33,9 @@ function Gjs(canvas,nodes,edges){
     const addToBFSTrace = (id)=>{
         if(id===null)return;
         nodeBFSTrace.push(id);
-        console.log(nodeBFSTrace);
         if(nodeBFSTrace.length===2){
             if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
-                const trace = GAlg.BFS(nodeBFSTrace[0], nodeBFSTrace[1]);
+                const trace = GAlg.BFSTrace(nodeBFSTrace[0], nodeBFSTrace[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
                     setNodeProp(node, "trace");

@@ -54,6 +54,8 @@ function Camera(canvasManager,g,cfg){
             ctx.arc(node.x,node.y,node.size,0,2*Math.PI,false);
             ctx.fill();
             ctx.closePath();
+            ctx.fillStyle="black";
+            ctx.fillText(node.id,node.x,node.y);
         });
     };
 

@@ -2,47 +2,74 @@
 const GAlg={};
 GAlg.g={};
 
-GAlg.BFS=function(s,t){
+GAlg.BFSTrace=function(s,t){
+    const trace = _BFSTraceWawe(s,t,false);
+    if(!trace)
+        return false;
+    return _BFSTraceReverse(s,t,trace);
+};
+
+var _BFSTraceWawe = function(s,t,searchCycle){
+    searchCycle=searchCycle||false;
     const queue=[];
     const trace={};
     let found=false;
-    Object.keys(GAlg.g.nodesIndex).map((id)=>trace[id]=null);
-
     queue.push(s);
     trace[s]=0;
-    while(queue.length){
+    while(queue.length) {
         const node = queue.shift();
-        if(node===t) {
-            found=true;
-            break;
+        if (node === t && Object.keys(trace).length > 1) {
+            found = true;
         }
-        else{
-            GAlg.g.nodeNeighbourNodes[node].map((id_)=>{
-                if(trace[id_]===null){
-                    trace[id_]=trace[node]+1;
+        else {
+            for (let i = 0; i < GAlg.g.nodeNeighbourNodes[node].length; i++) {
+                const id_ = GAlg.g.nodeNeighbourNodes[node][i];
+                if (trace[id_] === null || trace[id_] === undefined) {
+                    trace[id_] = trace[node] + 1;
                     queue.push(id_);
                 }
-            });
-        }
-    }
-    if(!found)
-        return false;
-    else{
-        let c_node=t;
-        const s_trace=[];
-        s_trace.push(t);
-        while(1){
-            if(c_node===s)
-                break;
-            for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
-                var id = GAlg.g.nodeNeighbourNodes[c_node][i];
-                if(trace[id]===trace[c_node]-1){
-                    s_trace.push(id);
-                    c_node=id;
+                else if(searchCycle && trace[id_]>=trace[node]){
+                    console.log(id_,node);
+                    found=true;
                     break;
                 }
             }
         }
-        return s_trace.reverse();
+        if (found)
+            break;
     }
+    if(!found)
+        return false;
+    else
+        return trace;
+};
+
+var _BFSTraceReverse=function(s,t,trace){
+    let c_node=t;
+    const s_trace=[];
+    s_trace.push(t);
+    while(1){
+        if(c_node===s)
+            break;
+        for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
+            var id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            if(trace[id]===trace[c_node]-1){
+                s_trace.push(id);
+                c_node=id;
+                break;
+            }
+        }
+    }
+    return s_trace.reverse();
+};
+
+GAlg.Cycle = function(){
+    for(let i=0;i<GAlg.g.nodesArray.length;i++){
+        const nodeId = GAlg.g.nodesArray[i].id;
+        let trace=_BFSTraceWawe(nodeId,nodeId,true);
+        if(trace){
+            return true;
+        }
+    }
+    return false;
 };
