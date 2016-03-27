@@ -2,6 +2,7 @@
 
 function Gjs(canvas,nodes,edges){
     var g = new Graph();
+    GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
     g.setLayout(circleLayout,{r:150});
@@ -13,6 +14,13 @@ function Gjs(canvas,nodes,edges){
     let highlightEdgeId=[];
     let dragNodeId=null;
     let edgeSourceNodeId=null;
+    let nodeBFSTrace=[];
+
+    const specialMarked={};
+    specialMarked.nodes={};
+    specialMarked.edges={};
+    specialMarked.nodes.BFSTraceNodeId=[];
+    specialMarked.edges.BFSTraceEdgeId=[];
 
     this.layout=(layout,data)=>{
         g.nodesArray.map((node,i)=>{
@@ -22,13 +30,71 @@ function Gjs(canvas,nodes,edges){
         });
     };
 
+    const addToBFSTrace = (id)=>{
+        if(id===null)return;
+        nodeBFSTrace.push(id);
+        console.log(nodeBFSTrace);
+        if(nodeBFSTrace.length===2){
+            if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
+                const trace = GAlg.BFS(nodeBFSTrace[0], nodeBFSTrace[1]);
+                for (let i = 0; i < trace.length; i++) {
+                    const node = trace[i];
+                    setNodeProp(node, "trace");
+                    if (i < trace.length - 1) {
+                        const edge = getEdgeIdByST(node, trace[i + 1]);
+                        setEdgeProp(edge, "trace");
+                        specialMarked.edges.BFSTraceEdgeId.push(edge);
+                    }
+                }
+                setNodeProp(trace[0], "trace_s");
+                setNodeProp(trace[trace.length - 1], "trace_t");
+                specialMarked.nodes.BFSTraceNodeId = trace;
+            }
+            nodeBFSTrace=[];
+        }
+        else if(nodeBFSTrace.length>2){
+            nodeBFSTrace=[];
+        }
+    };
+
+    const getEdgeIdByST = (s,t)=>{
+        for(let i=0;i<g.edgesArray.length;i++){
+            const edge=g.edgesArray[i];
+            if((edge.s===s && edge.t===t) || (edge.s===t && edge.t===s))
+                return edge.id;
+        }
+    };
+
     const setNodeProp = (id,prop)=>{
         if(id===null)return;
+        let specMarked=false;
+        Object.keys(specialMarked.nodes).map((key)=>{
+            if(specialMarked.nodes[key].includes(id))
+                specMarked=true;
+        });
+        if(specMarked)return;
         g.nodesIndex[id].prop=prop;
     };
     const setEdgeProp = (id,prop)=>{
         if(id===null)return;
+        let specMarked=false;
+        Object.keys(specialMarked.edges).map((key)=>{
+            if(specialMarked.edges[key].includes(id))
+                specMarked=true;
+        });
+        if(specMarked)return;
         g.edgesIndex[id].prop=prop;
+    };
+
+    const cleanAllProps = ()=>{
+        Object.keys(specialMarked.nodes).map((key)=>{
+            specialMarked.nodes[key]=[];
+        });
+        Object.keys(specialMarked.edges).map((key)=>{
+            specialMarked.edges[key]=[];
+        });
+        g.edgesArray.map((edge)=>edge.prop="");
+        g.nodesArray.map((node)=>node.prop="");
     };
 
     const getNodeIdByCoords = (x,y)=>{
@@ -91,6 +157,11 @@ function Gjs(canvas,nodes,edges){
 
     canvasManager.onmouseup=()=>{
         dragNodeId=null;
+    };
+
+    canvasManager.onclick=(e)=>{
+        cleanAllProps();
+        addToBFSTrace(getNodeIdByCoords(e.x,e.y));
     };
 
     canvasManager.ondblclick=(e)=>{
