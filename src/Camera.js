@@ -5,12 +5,16 @@ const cameraSettings = {
     nodeColor:{
         "":"#DD5A5A",
         "hover":"#4E9999",
-        "highlight":"#768DCC"
+        "highlight":"#768DCC",
+        "trace":"#CE44F4",
+        "trace_s":"#5021CC",
+        "trace_t":"#CC1205"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
         "":"#E87C7C",
-        "highlight":"#94A4CC"
+        "highlight":"#94A4CC",
+        "trace":"#CE44F4"
     },
     edgeWidth:{
         "":4
@@ -43,6 +47,7 @@ function Camera(canvasManager,g,cfg){
     };
 
     const nodeRender = ()=>{
+        ctx.font="20px Arial";
         g.nodesArray.map((node)=>{
             ctx.fillStyle=cfg.nodeColor.hasOwnProperty(node.prop)?cfg.nodeColor[node.prop]:cfg.nodeColor[""];
             ctx.beginPath();

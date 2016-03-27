@@ -119,6 +119,51 @@ function Graph(settings){
 'use strict';
 const GAlg={};
 GAlg.g={};
+
+GAlg.BFS=function(s,t){
+    const queue=[];
+    const trace={};
+    let found=false;
+    Object.keys(GAlg.g.nodesIndex).map((id)=>trace[id]=null);
+
+    queue.push(s);
+    trace[s]=0;
+    while(queue.length){
+        const node = queue.shift();
+        if(node===t) {
+            found=true;
+            break;
+        }
+        else{
+            GAlg.g.nodeNeighbourNodes[node].map((id_)=>{
+                if(trace[id_]===null){
+                    trace[id_]=trace[node]+1;
+                    queue.push(id_);
+                }
+            });
+        }
+    }
+    if(!found)
+        return false;
+    else{
+        let c_node=t;
+        const s_trace=[];
+        s_trace.push(t);
+        while(1){
+            if(c_node===s)
+                break;
+            for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
+                var id = GAlg.g.nodeNeighbourNodes[c_node][i];
+                if(trace[id]===trace[c_node]-1){
+                    s_trace.push(id);
+                    c_node=id;
+                    break;
+                }
+            }
+        }
+        return s_trace.reverse();
+    }
+};
 'use strict';
 
 function CanvasManager(canvas){
@@ -216,12 +261,16 @@ const cameraSettings = {
     nodeColor:{
         "":"#DD5A5A",
         "hover":"#4E9999",
-        "highlight":"#768DCC"
+        "highlight":"#768DCC",
+        "trace":"#CE44F4",
+        "trace_s":"#5021CC",
+        "trace_t":"#CC1205"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
         "":"#E87C7C",
-        "highlight":"#94A4CC"
+        "highlight":"#94A4CC",
+        "trace":"#CE44F4"
     },
     edgeWidth:{
         "":4
@@ -254,6 +303,7 @@ function Camera(canvasManager,g,cfg){
     };
 
     const nodeRender = ()=>{
+        ctx.font="20px Arial";
         g.nodesArray.map((node)=>{
             ctx.fillStyle=cfg.nodeColor.hasOwnProperty(node.prop)?cfg.nodeColor[node.prop]:cfg.nodeColor[""];
             ctx.beginPath();
@@ -291,6 +341,7 @@ function Camera(canvasManager,g,cfg){
 
 function Gjs(canvas,nodes,edges){
     var g = new Graph();
+    GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
     g.setLayout(circleLayout,{r:150});
@@ -302,6 +353,13 @@ function Gjs(canvas,nodes,edges){
     let highlightEdgeId=[];
     let dragNodeId=null;
     let edgeSourceNodeId=null;
+    let nodeBFSTrace=[];
+
+    const specialMarked={};
+    specialMarked.nodes={};
+    specialMarked.edges={};
+    specialMarked.nodes.BFSTraceNodeId=[];
+    specialMarked.edges.BFSTraceEdgeId=[];
 
     this.layout=(layout,data)=>{
         g.nodesArray.map((node,i)=>{
@@ -311,13 +369,71 @@ function Gjs(canvas,nodes,edges){
         });
     };
 
+    const addToBFSTrace = (id)=>{
+        if(id===null)return;
+        nodeBFSTrace.push(id);
+        console.log(nodeBFSTrace);
+        if(nodeBFSTrace.length===2){
+            if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
+                const trace = GAlg.BFS(nodeBFSTrace[0], nodeBFSTrace[1]);
+                for (let i = 0; i < trace.length; i++) {
+                    const node = trace[i];
+                    setNodeProp(node, "trace");
+                    if (i < trace.length - 1) {
+                        const edge = getEdgeIdByST(node, trace[i + 1]);
+                        setEdgeProp(edge, "trace");
+                        specialMarked.edges.BFSTraceEdgeId.push(edge);
+                    }
+                }
+                setNodeProp(trace[0], "trace_s");
+                setNodeProp(trace[trace.length - 1], "trace_t");
+                specialMarked.nodes.BFSTraceNodeId = trace;
+            }
+            nodeBFSTrace=[];
+        }
+        else if(nodeBFSTrace.length>2){
+            nodeBFSTrace=[];
+        }
+    };
+
+    const getEdgeIdByST = (s,t)=>{
+        for(let i=0;i<g.edgesArray.length;i++){
+            const edge=g.edgesArray[i];
+            if((edge.s===s && edge.t===t) || (edge.s===t && edge.t===s))
+                return edge.id;
+        }
+    };
+
     const setNodeProp = (id,prop)=>{
         if(id===null)return;
+        let specMarked=false;
+        Object.keys(specialMarked.nodes).map((key)=>{
+            if(specialMarked.nodes[key].includes(id))
+                specMarked=true;
+        });
+        if(specMarked)return;
         g.nodesIndex[id].prop=prop;
     };
     const setEdgeProp = (id,prop)=>{
         if(id===null)return;
+        let specMarked=false;
+        Object.keys(specialMarked.edges).map((key)=>{
+            if(specialMarked.edges[key].includes(id))
+                specMarked=true;
+        });
+        if(specMarked)return;
         g.edgesIndex[id].prop=prop;
+    };
+
+    const cleanAllProps = ()=>{
+        Object.keys(specialMarked.nodes).map((key)=>{
+            specialMarked.nodes[key]=[];
+        });
+        Object.keys(specialMarked.edges).map((key)=>{
+            specialMarked.edges[key]=[];
+        });
+        g.edgesArray.map((edge)=>edge.prop="");
+        g.nodesArray.map((node)=>node.prop="");
     };
 
     const getNodeIdByCoords = (x,y)=>{
@@ -380,6 +496,11 @@ function Gjs(canvas,nodes,edges){
 
     canvasManager.onmouseup=()=>{
         dragNodeId=null;
+    };
+
+    canvasManager.onclick=(e)=>{
+        cleanAllProps();
+        addToBFSTrace(getNodeIdByCoords(e.x,e.y));
     };
 
     canvasManager.ondblclick=(e)=>{
