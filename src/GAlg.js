@@ -29,7 +29,7 @@ var _BFSTraceWawe = function(s,t,searchCycle){
                     queue.push(id_);
                 }
                 else if(searchCycle && trace[id_]>=trace[node]){
-                    console.log(id_,node);
+                    trace.__CYCLE_NODE=id_;
                     found=true;
                     break;
                 }
@@ -63,13 +63,25 @@ var _BFSTraceReverse=function(s,t,trace){
     return s_trace.reverse();
 };
 
+var _BFSCycleTraceReverse=function(s,trace){
+    let c_node=trace.__CYCLE_NODE;
+    const s_trace=[];
+    let half=false;
+    s_trace.push(trace.__CYCLE_NODE);
+    console.log(s,"push",trace.__CYCLE_NODE);
+    //TODO:!
+};
+
 GAlg.Cycle = function(){
+    const traces=[];
     for(let i=0;i<GAlg.g.nodesArray.length;i++){
         const nodeId = GAlg.g.nodesArray[i].id;
         let trace=_BFSTraceWawe(nodeId,nodeId,true);
         if(trace){
-            return true;
+            //TODO:!
         }
     }
-    return false;
+    if(traces.length===0)
+        return false;
+    return traces;
 };

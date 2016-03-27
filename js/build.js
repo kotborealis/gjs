@@ -147,7 +147,7 @@ var _BFSTraceWawe = function(s,t,searchCycle){
                     queue.push(id_);
                 }
                 else if(searchCycle && trace[id_]>=trace[node]){
-                    console.log(id_,node);
+                    trace.__CYCLE_NODE=id_;
                     found=true;
                     break;
                 }
@@ -181,15 +181,57 @@ var _BFSTraceReverse=function(s,t,trace){
     return s_trace.reverse();
 };
 
+var _BFSCycleTraceReverse=function(s,trace){
+    let c_node=trace.__CYCLE_NODE;
+    const s_trace=[];
+    let half=false;
+    s_trace.push(trace.__CYCLE_NODE);
+    console.log(s,"push",trace.__CYCLE_NODE);
+    console.log(trace);
+    while(1){
+        if(c_node===s){
+            if(half){
+                break;
+            }
+            else{
+                half=true;
+                c_node=trace.__CYCLE_NODE;
+            }
+        }
+        for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
+            var id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            if(trace[id]!==null && trace[id]===trace[c_node]-1 && !s_trace.includes(id)){
+                if(!half){
+                    console.log("push",id);
+                    s_trace.push(id);
+                }
+                else {
+                    console.log("unshift",id);
+                    s_trace.unshift(id);
+                }
+                trace[id]=null;
+                c_node = id;
+                break;
+            }
+        }
+    }
+    console.log("da");
+    return s_trace;
+};
+
 GAlg.Cycle = function(){
+    const traces=[];
     for(let i=0;i<GAlg.g.nodesArray.length;i++){
         const nodeId = GAlg.g.nodesArray[i].id;
         let trace=_BFSTraceWawe(nodeId,nodeId,true);
         if(trace){
-            return true;
+            traces.push(_BFSCycleTraceReverse(nodeId,trace));
+            return traces[0];
         }
     }
-    return false;
+    if(traces.length===0)
+        return false;
+    return traces;
 };
 'use strict';
 
