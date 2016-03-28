@@ -63,6 +63,7 @@ function Gjs(canvas,nodes,edges){
                 return edge.id;
         }
     };
+    this.getEdgeIdByST=getEdgeIdByST;
 
     const setNodeProp = (id,prop)=>{
         if(id===null)return;
@@ -74,8 +75,9 @@ function Gjs(canvas,nodes,edges){
         if(specMarked)return;
         g.nodesIndex[id].prop=prop;
     };
+    this.setNodeProp=setNodeProp;
     const setEdgeProp = (id,prop)=>{
-        if(id===null)return;
+        if(id===null || id===undefined)return;
         let specMarked=false;
         Object.keys(specialMarked.edges).map((key)=>{
             if(specialMarked.edges[key].includes(id))
@@ -84,6 +86,7 @@ function Gjs(canvas,nodes,edges){
         if(specMarked)return;
         g.edgesIndex[id].prop=prop;
     };
+    this.setEdgeProp=setEdgeProp;
 
     const cleanAllProps = ()=>{
         Object.keys(specialMarked.nodes).map((key)=>{
@@ -95,6 +98,7 @@ function Gjs(canvas,nodes,edges){
         g.edgesArray.map((edge)=>edge.prop="");
         g.nodesArray.map((node)=>node.prop="");
     };
+    this.cleanAllProps=cleanAllProps;
 
     const getNodeIdByCoords = (x,y)=>{
         let nodeId=null;

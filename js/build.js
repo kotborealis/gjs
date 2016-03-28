@@ -127,7 +127,7 @@ GAlg.BFSTrace=function(s,t){
     return _BFSTraceReverse(s,t,trace);
 };
 
-var _BFSTraceWawe = function(s,t,searchCycle){
+const _BFSTraceWawe = function(s,t,searchCycle){
     searchCycle=searchCycle||false;
     const queue=[];
     const trace={};
@@ -162,7 +162,7 @@ var _BFSTraceWawe = function(s,t,searchCycle){
         return trace;
 };
 
-var _BFSTraceReverse=function(s,t,trace){
+const _BFSTraceReverse=function(s,t,trace){
     let c_node=t;
     const s_trace=[];
     s_trace.push(t);
@@ -170,7 +170,7 @@ var _BFSTraceReverse=function(s,t,trace){
         if(c_node===s)
             break;
         for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
-            var id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            const id = GAlg.g.nodeNeighbourNodes[c_node][i];
             if(trace[id]===trace[c_node]-1){
                 s_trace.push(id);
                 c_node=id;
@@ -181,41 +181,13 @@ var _BFSTraceReverse=function(s,t,trace){
     return s_trace.reverse();
 };
 
-var _BFSCycleTraceReverse=function(s,trace){
-    let c_node=trace.__CYCLE_NODE;
+const _BFSCycleTraceReverse=function(trace){
+    const max = trace[trace.__CYCLE_NODE];
     const s_trace=[];
-    let half=false;
-    s_trace.push(trace.__CYCLE_NODE);
-    console.log(s,"push",trace.__CYCLE_NODE);
-    console.log(trace);
-    while(1){
-        if(c_node===s){
-            if(half){
-                break;
-            }
-            else{
-                half=true;
-                c_node=trace.__CYCLE_NODE;
-            }
-        }
-        for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
-            var id = GAlg.g.nodeNeighbourNodes[c_node][i];
-            if(trace[id]!==null && trace[id]===trace[c_node]-1 && !s_trace.includes(id)){
-                if(!half){
-                    console.log("push",id);
-                    s_trace.push(id);
-                }
-                else {
-                    console.log("unshift",id);
-                    s_trace.unshift(id);
-                }
-                trace[id]=null;
-                c_node = id;
-                break;
-            }
-        }
-    }
-    console.log("da");
+    Object.keys(trace).map((node)=>{
+        if(trace[node]<=max)
+            s_trace.push(node);
+    });
     return s_trace;
 };
 
@@ -225,13 +197,30 @@ GAlg.Cycle = function(){
         const nodeId = GAlg.g.nodesArray[i].id;
         let trace=_BFSTraceWawe(nodeId,nodeId,true);
         if(trace){
-            traces.push(_BFSCycleTraceReverse(nodeId,trace));
-            return traces[0];
+            traces.push(_BFSCycleTraceReverse(trace));
         }
     }
     if(traces.length===0)
         return false;
-    return traces;
+    let min=[0xffffffff,null];
+    for(let i=0;i<traces.length;i++){
+        if(traces[i].length>2 && traces[i].length<min[0]){
+            min[0]=traces[i].length;
+            min[1]=i;
+        }
+    }
+    if(min[1]!==null)
+        return traces[min[1]];
+    else
+        return false;
+};
+
+GAlg.CycleUI = function(){
+    const trace=GAlg.Cycle();
+    if(trace!==false)
+        for(let i=0;i<trace.length;i++){
+            g.setNodeProp(trace[i],"cycle");
+        }
 };
 'use strict';
 
@@ -333,13 +322,15 @@ const cameraSettings = {
         "highlight":"#768DCC",
         "trace":"#CE44F4",
         "trace_s":"#5021CC",
-        "trace_t":"#CC1205"
+        "trace_t":"#CC1205",
+        "cycle":"#A1F69B"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
         "":"#E87C7C",
         "highlight":"#94A4CC",
-        "trace":"#CE44F4"
+        "trace":"#CE44F4",
+        "cycle":"#A1F69B"
     },
     edgeWidth:{
         "":4
@@ -357,9 +348,11 @@ function Camera(canvasManager,g,cfg){
         edgeRender();
         nodeRender();
         endRender();
-        requestAnimationFrame(redraw);
+        setTimeout(redraw,50);
+        //requestAnimationFrame(redraw);
     };
-    requestAnimationFrame(redraw);
+    //requestAnimationFrame(redraw);
+    setTimeout(redraw,50);
 
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
@@ -473,6 +466,7 @@ function Gjs(canvas,nodes,edges){
                 return edge.id;
         }
     };
+    this.getEdgeIdByST=getEdgeIdByST;
 
     const setNodeProp = (id,prop)=>{
         if(id===null)return;
@@ -484,8 +478,9 @@ function Gjs(canvas,nodes,edges){
         if(specMarked)return;
         g.nodesIndex[id].prop=prop;
     };
+    this.setNodeProp=setNodeProp;
     const setEdgeProp = (id,prop)=>{
-        if(id===null)return;
+        if(id===null || id===undefined)return;
         let specMarked=false;
         Object.keys(specialMarked.edges).map((key)=>{
             if(specialMarked.edges[key].includes(id))
@@ -494,6 +489,7 @@ function Gjs(canvas,nodes,edges){
         if(specMarked)return;
         g.edgesIndex[id].prop=prop;
     };
+    this.setEdgeProp=setEdgeProp;
 
     const cleanAllProps = ()=>{
         Object.keys(specialMarked.nodes).map((key)=>{
@@ -505,6 +501,7 @@ function Gjs(canvas,nodes,edges){
         g.edgesArray.map((edge)=>edge.prop="");
         g.nodesArray.map((node)=>node.prop="");
     };
+    this.cleanAllProps=cleanAllProps;
 
     const getNodeIdByCoords = (x,y)=>{
         let nodeId=null;

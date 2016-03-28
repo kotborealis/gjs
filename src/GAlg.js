@@ -9,7 +9,7 @@ GAlg.BFSTrace=function(s,t){
     return _BFSTraceReverse(s,t,trace);
 };
 
-var _BFSTraceWawe = function(s,t,searchCycle){
+const _BFSTraceWawe = function(s,t,searchCycle){
     searchCycle=searchCycle||false;
     const queue=[];
     const trace={};
@@ -44,7 +44,7 @@ var _BFSTraceWawe = function(s,t,searchCycle){
         return trace;
 };
 
-var _BFSTraceReverse=function(s,t,trace){
+const _BFSTraceReverse=function(s,t,trace){
     let c_node=t;
     const s_trace=[];
     s_trace.push(t);
@@ -52,7 +52,7 @@ var _BFSTraceReverse=function(s,t,trace){
         if(c_node===s)
             break;
         for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
-            var id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            const id = GAlg.g.nodeNeighbourNodes[c_node][i];
             if(trace[id]===trace[c_node]-1){
                 s_trace.push(id);
                 c_node=id;
@@ -63,13 +63,14 @@ var _BFSTraceReverse=function(s,t,trace){
     return s_trace.reverse();
 };
 
-var _BFSCycleTraceReverse=function(s,trace){
-    let c_node=trace.__CYCLE_NODE;
+const _BFSCycleTraceReverse=function(trace){
+    const max = trace[trace.__CYCLE_NODE];
     const s_trace=[];
-    let half=false;
-    s_trace.push(trace.__CYCLE_NODE);
-    console.log(s,"push",trace.__CYCLE_NODE);
-    //TODO:!
+    Object.keys(trace).map((node)=>{
+        if(trace[node]<=max)
+            s_trace.push(node);
+    });
+    return s_trace;
 };
 
 GAlg.Cycle = function(){
@@ -78,10 +79,28 @@ GAlg.Cycle = function(){
         const nodeId = GAlg.g.nodesArray[i].id;
         let trace=_BFSTraceWawe(nodeId,nodeId,true);
         if(trace){
-            //TODO:!
+            traces.push(_BFSCycleTraceReverse(trace));
         }
     }
     if(traces.length===0)
         return false;
-    return traces;
+    let min=[0xffffffff,null];
+    for(let i=0;i<traces.length;i++){
+        if(traces[i].length>2 && traces[i].length<min[0]){
+            min[0]=traces[i].length;
+            min[1]=i;
+        }
+    }
+    if(min[1]!==null)
+        return traces[min[1]];
+    else
+        return false;
+};
+
+GAlg.CycleUI = function(){
+    const trace=GAlg.Cycle();
+    if(trace!==false)
+        for(let i=0;i<trace.length;i++){
+            g.setNodeProp(trace[i],"cycle");
+        }
 };

@@ -8,13 +8,15 @@ const cameraSettings = {
         "highlight":"#768DCC",
         "trace":"#CE44F4",
         "trace_s":"#5021CC",
-        "trace_t":"#CC1205"
+        "trace_t":"#CC1205",
+        "cycle":"#A1F69B"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
         "":"#E87C7C",
         "highlight":"#94A4CC",
-        "trace":"#CE44F4"
+        "trace":"#CE44F4",
+        "cycle":"#A1F69B"
     },
     edgeWidth:{
         "":4
@@ -32,9 +34,11 @@ function Camera(canvasManager,g,cfg){
         edgeRender();
         nodeRender();
         endRender();
-        requestAnimationFrame(redraw);
+        setTimeout(redraw,50);
+        //requestAnimationFrame(redraw);
     };
-    requestAnimationFrame(redraw);
+    //requestAnimationFrame(redraw);
+    setTimeout(redraw,50);
 
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
