@@ -5,7 +5,7 @@ function Gjs(canvas,nodes,edges){
     GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
-    g.setLayout(circleLayout,{r:150});
+    //g.setLayout(circleLayout,{r:150});
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
 

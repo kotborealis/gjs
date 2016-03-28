@@ -51,7 +51,7 @@ function Graph(settings){
         return __addEdge({id:"EDGE!!_"+_EDGE_ID_GEN++,s,t});
     };
 
-    var __addNode = function(node){
+    const __addNode = function(node){
         if(!node.id || (typeof node.id!=='string' && typeof node.id!=='number'))
             throw new Error("Invalid node ID");
         if(self.nodesIndex[node.id])
@@ -76,7 +76,7 @@ function Graph(settings){
         return _node.id;
     };
 
-    var __addEdge = function(edge){
+    const __addEdge = function(edge){
         if(!edge.id || (typeof edge.id!=='string' && typeof edge.id!=='number'))
             throw new Error("Invalid edge ID");
         if(!edge.t || (typeof edge.t!=='string' && typeof edge.t!=='number'))
@@ -94,6 +94,7 @@ function Graph(settings){
         _edge.id = edge.id;
         _edge.s = edge.s;
         _edge.t = edge.t;
+        _edge.weight = edge.weight || Number.POSITIVE_INFINITY;
 
         self.edgesArray.push(_edge);
         self.edgesIndex[_edge.id]=_edge;
@@ -112,7 +113,6 @@ function Graph(settings){
             const c = layout(i,self.nodesArray.length,data);
             self.nodesArray[i].x = c.x;
             self.nodesArray[i].y = c.y;
-            console.log(c);
         }
     };
 }

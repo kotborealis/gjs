@@ -51,7 +51,7 @@ function Graph(settings){
         return __addEdge({id:"EDGE!!_"+_EDGE_ID_GEN++,s,t});
     };
 
-    var __addNode = function(node){
+    const __addNode = function(node){
         if(!node.id || (typeof node.id!=='string' && typeof node.id!=='number'))
             throw new Error("Invalid node ID");
         if(self.nodesIndex[node.id])
@@ -76,7 +76,7 @@ function Graph(settings){
         return _node.id;
     };
 
-    var __addEdge = function(edge){
+    const __addEdge = function(edge){
         if(!edge.id || (typeof edge.id!=='string' && typeof edge.id!=='number'))
             throw new Error("Invalid edge ID");
         if(!edge.t || (typeof edge.t!=='string' && typeof edge.t!=='number'))
@@ -94,6 +94,7 @@ function Graph(settings){
         _edge.id = edge.id;
         _edge.s = edge.s;
         _edge.t = edge.t;
+        _edge.weight = edge.weight || Number.POSITIVE_INFINITY;
 
         self.edgesArray.push(_edge);
         self.edgesIndex[_edge.id]=_edge;
@@ -112,57 +113,40 @@ function Graph(settings){
             const c = layout(i,self.nodesArray.length,data);
             self.nodesArray[i].x = c.x;
             self.nodesArray[i].y = c.y;
-            console.log(c);
         }
     };
 }
 'use strict';
 const GAlg={};
 GAlg.g={};
-
-GAlg.BFSTrace=function(s,t){
-    const trace = _BFSTraceWawe(s,t,false);
-    if(!trace)
-        return false;
-    return _BFSTraceReverse(s,t,trace);
-};
-
-const _BFSTraceWawe = function(s,t,searchCycle){
-    searchCycle=searchCycle||false;
+GAlg.BFSTravel = function(root,cb1,cb2){
+    cb1=cb1||function(){};
+    cb2=cb2||function(){};
     const queue=[];
     const trace={};
-    let found=false;
-    queue.push(s);
-    trace[s]=0;
-    while(queue.length) {
+
+    queue.push(root);
+    trace[root]=0;
+
+    while(queue.length){
         const node = queue.shift();
-        if (node === t && Object.keys(trace).length > 1) {
-            found = true;
+        if(cb1({trace,node})===true){
+            return trace;
         }
-        else {
-            for (let i = 0; i < GAlg.g.nodeNeighbourNodes[node].length; i++) {
-                const id_ = GAlg.g.nodeNeighbourNodes[node][i];
-                if (trace[id_] === null || trace[id_] === undefined) {
-                    trace[id_] = trace[node] + 1;
-                    queue.push(id_);
-                }
-                else if(searchCycle && trace[id_]>=trace[node]){
-                    trace.__CYCLE_NODE=id_;
-                    found=true;
-                    break;
-                }
+        for(let i=0; i<GAlg.g.nodeNeighbourNodes[node].length; i++){
+            const child_node = GAlg.g.nodeNeighbourNodes[node][i];
+            if(trace[child_node]===null || trace[child_node]===undefined){
+                trace[child_node]=trace[node]+1;
+                queue.push(child_node);
+            }
+            if(cb2({trace,node,child_node})===true){
+                return trace;
             }
         }
-        if (found)
-            break;
     }
-    if(!found)
-        return false;
-    else
-        return trace;
+    return trace;
 };
-
-const _BFSTraceReverse=function(s,t,trace){
+GAlg.BFSRawTraceReverse = function (s, t, trace) {
     let c_node=t;
     const s_trace=[];
     s_trace.push(t);
@@ -180,48 +164,22 @@ const _BFSTraceReverse=function(s,t,trace){
     }
     return s_trace.reverse();
 };
-
-const _BFSCycleTraceReverse=function(trace){
-    const max = trace[trace.__CYCLE_NODE];
-    const s_trace=[];
-    Object.keys(trace).map((node)=>{
-        if(trace[node]<=max)
-            s_trace.push(node);
+GAlg.BFSTrace = function(source,target){
+    console.log(source,target);
+    let found = false;
+    const raw_trace = GAlg.BFSTravel(source,
+        (e)=>{
+            if(e.node===target){
+                found = true;
+                return true;
+            }
     });
-    return s_trace;
+    if(!found)
+        return false;
+    console.log("TRACE:",GAlg.BFSRawTraceReverse(source, target, raw_trace));
+    return GAlg.BFSRawTraceReverse(source, target, raw_trace);
 };
 
-GAlg.Cycle = function(){
-    const traces=[];
-    for(let i=0;i<GAlg.g.nodesArray.length;i++){
-        const nodeId = GAlg.g.nodesArray[i].id;
-        let trace=_BFSTraceWawe(nodeId,nodeId,true);
-        if(trace){
-            traces.push(_BFSCycleTraceReverse(trace));
-        }
-    }
-    if(traces.length===0)
-        return false;
-    let min=[0xffffffff,null];
-    for(let i=0;i<traces.length;i++){
-        if(traces[i].length>2 && traces[i].length<min[0]){
-            min[0]=traces[i].length;
-            min[1]=i;
-        }
-    }
-    if(min[1]!==null)
-        return traces[min[1]];
-    else
-        return false;
-};
-
-GAlg.CycleUI = function(){
-    const trace=GAlg.Cycle();
-    if(trace!==false)
-        for(let i=0;i<trace.length;i++){
-            g.setNodeProp(trace[i],"cycle");
-        }
-};
 'use strict';
 
 function CanvasManager(canvas){
@@ -408,7 +366,7 @@ function Gjs(canvas,nodes,edges){
     GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
-    g.setLayout(circleLayout,{r:150});
+    //g.setLayout(circleLayout,{r:150});
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
 
@@ -603,4 +561,5 @@ var gridLayout = function(i,n,data){
     var y=data.r*((i/data.row )<<0);
     return {x,y};
 };
+
 //# sourceMappingURL=build.js.map
