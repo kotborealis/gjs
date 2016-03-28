@@ -5,7 +5,7 @@ function Gjs(canvas,nodes,edges){
     GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
-    //g.setLayout(circleLayout,{r:150});
+    g.setLayout(circleLayout,{r:150});
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
 
@@ -55,6 +55,23 @@ function Gjs(canvas,nodes,edges){
             nodeBFSTrace=[];
         }
     };
+
+    const searchMinCycle = function(){
+        const traces = GAlg.BFSCycle();
+        if(!traces.length)return;
+        let min = traces[0].length;
+        let minI = 0;
+        for(let i=1;i<traces.length;i++){
+            if(traces[i].length<min)
+                minI=i;
+        }
+        console.log(min,minI);
+        traces[minI].map((id)=>{
+            console.log(id);
+            setNodeProp(id,"cycle");
+        });
+    };
+    this.searchMinCycle = searchMinCycle;
 
     const getEdgeIdByST = (s,t)=>{
         for(let i=0;i<g.edgesArray.length;i++){

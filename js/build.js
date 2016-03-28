@@ -119,7 +119,11 @@ function Graph(settings){
 'use strict';
 const GAlg={};
 GAlg.g={};
-GAlg.BFSTravel = function(root,cb1,cb2){
+
+/**
+ * Main functions
+ */
+GAlg.BFSTravel = function(root, cb1, cb2){
     cb1=cb1||function(){};
     cb2=cb2||function(){};
     const queue=[];
@@ -139,7 +143,7 @@ GAlg.BFSTravel = function(root,cb1,cb2){
                 trace[child_node]=trace[node]+1;
                 queue.push(child_node);
             }
-            if(cb2({trace,node,child_node})===true){
+            else if(cb2({trace,node,child_node})===true){
                 return trace;
             }
         }
@@ -164,8 +168,54 @@ GAlg.BFSRawTraceReverse = function (s, t, trace) {
     }
     return s_trace.reverse();
 };
+GAlg.BFSRawCycleTraceReverse = function(CycleNode, trace){
+    let c_node=CycleNode;
+    const s_trace=[];
+    s_trace.push(CycleNode);
+    while(1){
+        //console.log("FIRST WHILE",c_node,s_trace);
+        if(trace[c_node]===0)
+            break;
+        for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
+            const id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            if(trace[id]===trace[c_node]-1){
+                s_trace.push(id);
+                c_node=id;
+                break;
+            }
+        }
+    }
+    while(1){
+        let stop=true;
+        //console.log("SECOND WHILE",c_node,s_trace);
+        if(c_node===CycleNode)
+            break;
+        for(let i=0;i<GAlg.g.nodeNeighbourNodes[c_node].length;i++){
+            const id = GAlg.g.nodeNeighbourNodes[c_node][i];
+            //console.log(id);
+            if(trace[id]===trace[c_node]+1 && (!s_trace.includes(id) || id===CycleNode)){
+                s_trace.push(id);
+                c_node=id;
+                stop=false;
+                break;
+            }
+        }
+        if(stop)break;
+    }
+    if(s_trace[0]!==s_trace[s_trace.length-1]){
+        s_trace.pop();
+        if(GAlg.g.nodeNeighbourNodes[s_trace[s_trace.length-1]].includes(s_trace[0]))
+            s_trace.push(s_trace[0]);
+        else
+            return null;
+    }
+    return s_trace;
+};
+
+/**
+ * Wrappers
+ */
 GAlg.BFSTrace = function(source,target){
-    console.log(source,target);
     let found = false;
     const raw_trace = GAlg.BFSTravel(source,
         (e)=>{
@@ -176,8 +226,27 @@ GAlg.BFSTrace = function(source,target){
     });
     if(!found)
         return false;
-    console.log("TRACE:",GAlg.BFSRawTraceReverse(source, target, raw_trace));
     return GAlg.BFSRawTraceReverse(source, target, raw_trace);
+};
+GAlg.BFSCycle = function(){
+    var traces=[];
+    for(let i=0;i<GAlg.g.nodesArray.length;i++){
+        let CycledNode = null;
+        let PrevNode = null;
+        const node = GAlg.g.nodesArray[i].id;
+        const trace = GAlg.BFSTravel(node,()=>{},(e)=>{
+            if(e.trace[e.child_node]>=e.trace[e.node]){
+                CycledNode=e.child_node;
+                return true;
+            }
+        });
+        if(CycledNode!==null && Object.keys(trace).length>3){
+            const _ = GAlg.BFSRawCycleTraceReverse(CycledNode,trace);
+            if(_!==null)
+                traces.push();
+        }
+    }
+    return traces;
 };
 
 'use strict';
@@ -366,7 +435,7 @@ function Gjs(canvas,nodes,edges){
     GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
-    //g.setLayout(circleLayout,{r:150});
+    g.setLayout(circleLayout,{r:150});
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
 
@@ -416,6 +485,23 @@ function Gjs(canvas,nodes,edges){
             nodeBFSTrace=[];
         }
     };
+
+    const searchMinCycle = function(){
+        const traces = GAlg.BFSCycle();
+        if(!traces.length)return;
+        let min = traces[0].length;
+        let minI = 0;
+        for(let i=1;i<traces.length;i++){
+            if(traces[i].length<min)
+                minI=i;
+        }
+        console.log(min,minI);
+        traces[minI].map((id)=>{
+            console.log(id);
+            setNodeProp(id,"cycle");
+        });
+    };
+    this.searchMinCycle = searchMinCycle;
 
     const getEdgeIdByST = (s,t)=>{
         for(let i=0;i<g.edgesArray.length;i++){

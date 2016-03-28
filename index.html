@@ -6,8 +6,17 @@
 <script src="js/build.js"></script>
 <canvas id="fof"></canvas>
 <script id="graph_data">
-    var nodes = [{"label":"","size":10,"id":"n0","x":150,"y":0,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"n1","x":75,"y":129,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"n2","x":-74,"y":129,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"n3","x":-150,"y":0,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"n4","x":-75,"y":-129,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"n5","x":75,"y":-129,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_0","x":104,"y":-42,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_1","x":283,"y":-191,"active":false,"highlight":false},{"label":"","size":10,"id":"NODE!!_2","x":224,"y":17,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_3","x":275,"y":-113,"active":false,"highlight":false},{"label":"","size":10,"id":"NODE!!_4","x":131,"y":-373,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_5","x":289,"y":-335,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_6","x":-119,"y":-241,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_7","x":-183,"y":88,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_8","x":-215,"y":-108,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_9","x":-284,"y":-27,"active":false,"highlight":false,"prop":""},{"label":"","size":10,"id":"NODE!!_10","x":-298,"y":221,"active":false,"highlight":false,"prop":""}];
-    var edges =[{"id":"e0","s":"n0","t":"n1","weight":null,"prop":""},{"id":"e1","s":"n1","t":"n2","weight":null,"prop":""},{"id":"e3","s":"n2","t":"n3","weight":null,"prop":""},{"id":"e4","s":"n5","t":"n4","weight":null,"prop":""},{"id":"e5","s":"n4","t":"n3","weight":null,"prop":""},{"id":"EDGE!!_0","s":"NODE!!_0","t":"NODE!!_1","weight":null,"prop":""},{"id":"EDGE!!_1","s":"NODE!!_2","t":"NODE!!_3","weight":null},{"id":"EDGE!!_2","s":"NODE!!_1","t":"NODE!!_2","weight":null},{"id":"EDGE!!_3","s":"n0","t":"NODE!!_4","weight":null,"prop":""},{"id":"EDGE!!_4","s":"NODE!!_4","t":"NODE!!_5","weight":null,"prop":""},{"id":"EDGE!!_5","s":"NODE!!_5","t":"NODE!!_6","weight":null,"prop":""},{"id":"EDGE!!_6","s":"NODE!!_7","t":"NODE!!_8","weight":null,"prop":""},{"id":"EDGE!!_7","s":"NODE!!_8","t":"NODE!!_9","weight":null,"prop":""},{"id":"EDGE!!_8","s":"NODE!!_10","t":"n3","weight":null,"prop":""},{"id":"EDGE!!_9","s":"NODE!!_7","t":"NODE!!_0","weight":null,"prop":""}];
+    var nodes = [
+        {id:"n0"},{id:"n1"},{id:"n2"},{id:"n3"},{id:"n4"},{id:"n5"}
+    ];
+    var edges = [
+        {id:"e0",s:"n0",t:"n1"},
+        {id:"e1",s:"n1",t:"n2"},
+        //{id:"e2",s:"n5",t:"n0"},
+        {id:"e3",s:"n2",t:"n3"},
+        {id:"e4",s:"n5",t:"n4"},
+        {id:"e5",s:"n4",t:"n3"}
+    ];
 
     var g = new Gjs("fof",nodes,edges);
 </script>
