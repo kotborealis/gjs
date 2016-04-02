@@ -111,7 +111,7 @@ GAlg.BFSTrace = function(source,target){
     return GAlg.BFSRawTraceReverse(source, target, raw_trace);
 };
 GAlg.BFSCycle = function(){
-    var traces=[];
+    let traces=[];
     for(let i=0;i<GAlg.g.nodesArray.length;i++){
         let CycledNode = null;
         let PrevNode = null;
@@ -124,8 +124,8 @@ GAlg.BFSCycle = function(){
         });
         if(CycledNode!==null && Object.keys(trace).length>3){
             const _ = GAlg.BFSRawCycleTraceReverse(CycledNode,trace);
-            if(_!==null)
-                traces.push();
+            if(_!==null && _.length>3)
+                traces.push(_);
         }
     }
     return traces;

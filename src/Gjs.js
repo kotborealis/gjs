@@ -65,11 +65,10 @@ function Gjs(canvas,nodes,edges){
             if(traces[i].length<min)
                 minI=i;
         }
-        console.log(min,minI);
-        traces[minI].map((id)=>{
-            console.log(id);
-            setNodeProp(id,"cycle");
-        });
+        for(let i=0;i<traces[minI].length-1;i++){
+            setNodeProp(traces[minI][i],"cycle");
+            setEdgeProp(getEdgeIdByST(traces[minI][i],traces[minI][i+1]),"cycle")
+        }
     };
     this.searchMinCycle = searchMinCycle;
 
