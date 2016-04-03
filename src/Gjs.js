@@ -1,12 +1,9 @@
 'use strict';
 
-function Gjs(canvas,nodes,edges){
-    var g = new Graph();
-    g.addNode(nodes);
-    g.addEdge(edges);
-    var canvasManager = new CanvasManager(canvas);
-    var camera = new Camera(canvasManager,g);
-    this.camera = camera;
+function Gjs(canvas){
+    const g = new Graph();
+    const canvasManager = new CanvasManager(canvas);
+    const camera = new Camera(canvasManager,g);
 
     let hoverNodeId=null;
     let highlightNodeId=[];
@@ -18,6 +15,18 @@ function Gjs(canvas,nodes,edges){
     const specialMarked={};
     specialMarked.nodes=[];
     specialMarked.edges=[];
+
+    //Graph Functions
+    this.loadFromFile = (file)=>{
+        loadJsonFromFile(file,(json)=>{
+            cleanAllProps();
+            g.clear();
+            if(json.hasOwnProperty("nodes") && json.hasOwnProperty("edges")){
+                g.addNode(json.nodes);
+                g.addEdge(json.edges);
+            }
+        });
+    };
 
     const addToPathFinding = (id)=>{
         if(id===null)return;
@@ -58,6 +67,7 @@ function Gjs(canvas,nodes,edges){
         return bipartite;
     };
 
+    //util functions
     const setNodeProp = (id,prop,special)=>{
         if(id===null || id===undefined)return;
         if(specialMarked.nodes.includes(id) && !special)return;
@@ -91,6 +101,8 @@ function Gjs(canvas,nodes,edges){
         return nodeId;
     };
 
+
+    //events
     const onNodeHover = (id)=>{
         setNodeProp(hoverNodeId,"");
         setNodeProp(id,"hover");
@@ -200,9 +212,10 @@ function Gjs(canvas,nodes,edges){
     this.layout.bipartite.elementOffset=70;
     this.layout.bipartite.direction='horizontal';
 
+    //Pathfinder
     this.pathFinderFunction = "BFSPath";
 
-    //GUI stuff
+    //GUI
     this.layoutCircle = ()=>this.setLayout(circleLayout,this.layout.circle);
     this.layoutGrid = ()=>this.setLayout(gridLayout,this.layout.grid);
     this.layoutBipartite = ()=>{
@@ -216,23 +229,25 @@ function Gjs(canvas,nodes,edges){
     };
     this.searchMinCycle = searchMinCycle;
     this.isBipartite = isBipartite;
+    this.camera = camera;
 }
 
-var circleLayout = function(e){
-    var x=(e.data.radius*Math.cos(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
-    var y=(e.data.radius*Math.sin(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
+//layout functions
+const circleLayout = function(e){
+    const x=(e.data.radius*Math.cos(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
+    const y=(e.data.radius*Math.sin(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
     return {x,y};
 };
-var gridLayout = function(e){
-    var x=e.data.offset*(e.nodeIndex%e.data.row);
-    var y=e.data.offset*((e.nodeIndex/e.data.row)<<0);
+const gridLayout = function(e){
+    const x=e.data.offset*(e.nodeIndex%e.data.row);
+    const y=e.data.offset*((e.nodeIndex/e.data.row)<<0);
     return {x,y};
 };
-var bipartiteLayout = function(e) {
-    var x=e.data.trace[e.nodeId]?0:e.data.partOffset;
-    var y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
+const bipartiteLayout = function(e) {
+    let x=e.data.trace[e.nodeId]?0:e.data.partOffset;
+    let y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
     if(e.data.direction==='vertical'){
-        var _=x;
+        const _=x;
         x=y;
         y=_;
     }

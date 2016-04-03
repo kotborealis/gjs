@@ -61,6 +61,7 @@ function Graph(settings){
         }
         return null;
     };
+
     this.getEdgeWeight = (source,target)=>{
         if(target===undefined)
             return this.edgesIndex[source].weight;
@@ -71,6 +72,15 @@ function Graph(settings){
             else
                 return edge.weight;
         }
+    };
+
+    this.clear = ()=>{
+        this.nodesArray=[];
+        this.edgesArray=[];
+        this.nodesIndex={};
+        this.edgesIndex={};
+        this.nodeNeighbourNodes={};
+        this.nodeNeighbourEdges={};
     };
 
     const __addNode = function(node){
