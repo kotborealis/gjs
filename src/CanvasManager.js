@@ -15,6 +15,7 @@ function CanvasManager(canvas){
     _mouse.y=0;
     _mouse.over=false;
     _mouse.down=false;
+    this.mouse = _mouse;
 
     this.canvas.onmousedown=(e)=>{
         _mouse.down=true;
@@ -54,6 +55,8 @@ function CanvasManager(canvas){
         self.ondblclick({x:_mouse.x,y:_mouse.y});
     };
 
+    this.canvas.addEventListener('mousewheel',(e)=>self.onmousewheel(e));
+
     const canvasCoords = (_x,_y)=>{
         const x = _x-_canvas.box.left;
         const y = _y-_canvas.box.top;
@@ -78,6 +81,7 @@ function CanvasManager(canvas){
     this.ondrag=()=>{};
     this.onmousedown=()=>{};
     this.onmouseup=()=>{};
+    this.onmousewheel=()=>{};
 
     /**
      * Methods
