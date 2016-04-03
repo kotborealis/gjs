@@ -31,6 +31,8 @@ function Camera(canvasManager,g,cfg){
     const ctx = canvasManager.ctx;
     this.viewportOffset={x:0,y:0};
 
+    let zoomFactor=1;
+
     const redraw = ()=>{
         startRender();
         edgeRender();
@@ -45,6 +47,7 @@ function Camera(canvasManager,g,cfg){
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
         ctx.save();
+        ctx.scale(zoomFactor,zoomFactor);
         ctx.translate(-viewport().x,-viewport().y);
     };
 
@@ -62,7 +65,11 @@ function Camera(canvasManager,g,cfg){
             ctx.fill();
             ctx.closePath();
             ctx.fillStyle="#0c0c0c";
-            ctx.fillText(node.id,node.x,node.y);
+            ctx.fillText(node.id,node.x,node.y-10);
+            if(node.gen_label!=="")
+                ctx.fillText(node.gen_label,node.x,node.y+10);
+            else
+                ctx.fillText(node.label,node.x,node.y+10);
         });
     };
 
@@ -70,7 +77,7 @@ function Camera(canvasManager,g,cfg){
         ctx.lineWidth=cfg.edgeWidth[""];
         ctx.font="20px Arial";
         ctx.fillStyle="#0c0c0c";
-        g.edgesArray.map((edge)=>{//∞
+        g.edgesArray.map((edge)=>{
             ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
             ctx.beginPath();
             ctx.moveTo(g.nodesIndex[edge.s].x,g.nodesIndex[edge.s].y);
@@ -87,14 +94,21 @@ function Camera(canvasManager,g,cfg){
     };
 
     const viewport = ()=>{
-        const x = cfg.viewport.x-this.viewportOffset.x;
-        const y = cfg.viewport.y-this.viewportOffset.y;
+        const x = (cfg.viewport.x-this.viewportOffset.x)/zoomFactor;
+        const y = (cfg.viewport.y-this.viewportOffset.y)/zoomFactor;
         return {x,y};
     };
 
+    this.zoom = (dy)=>{
+        if(dy===undefined)
+            return zoomFactor;
+        else
+            zoomFactor-=dy/(2000/zoomFactor);
+    };
+
     this.viewportCoords = (x,y)=>{
-        x = x+viewport().x;
-        y = y+viewport().y;
+        x = x/zoomFactor+viewport().x;
+        y = y/zoomFactor+viewport().y;
         return {x,y};
     };
 }

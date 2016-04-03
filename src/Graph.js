@@ -67,6 +67,7 @@ function Graph(settings){
 
         _node.active = false;
         _node.highlight = false;
+        _node.gen_label = "";
 
         self.nodesArray.push(_node);
         self.nodesIndex[_node.id]=_node;

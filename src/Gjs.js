@@ -145,6 +145,7 @@ function Gjs(canvas,nodes,edges){
     };
 
     canvasManager.onmousemove=(e)=>{
+        camera.pointer=canvasManager.mouse;
         onNodeHover(getNodeIdByCoords(e.x,e.y));
     };
 
@@ -152,7 +153,7 @@ function Gjs(canvas,nodes,edges){
         if(dragNodeId===null)
             onViewportDrag(e.dx,e.dy);
         else
-            onNodeDrag(dragNodeId,e.dx,e.dy);
+            onNodeDrag(dragNodeId,e.dx/camera.zoom(),e.dy/camera.zoom());
     };
 
     canvasManager.onmousedown=(e)=>{
@@ -188,6 +189,10 @@ function Gjs(canvas,nodes,edges){
                 edgeSourceNodeId = null;
             }
         }
+    };
+
+    canvasManager.onmousewheel=(e)=>{
+        camera.zoom(e.deltaY);
     };
 
     //Layouts
@@ -229,8 +234,6 @@ function Gjs(canvas,nodes,edges){
     };
     this.searchMinCycle = searchMinCycle;
     this.isBipartite = isBipartite;
-
-    this.setLayout(circleLayout,this.layout.circle);
 }
 
 var circleLayout = function(e){
