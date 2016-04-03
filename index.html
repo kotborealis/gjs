@@ -1,26 +1,19 @@
-<style>
-    * { margin:0; padding:0; }
-    html, body { width:100%; height:100%; }
-    canvas { display:block; }
-</style>
-<script src="src/Graph.js"></script>
-<script src="src/GAlg.js"></script>
-<script src="src/CanvasManager.js"></script>
-<script src="src/Camera.js"></script>
-<script src="src/Gjs.js"></script>
-<canvas id="fof"></canvas>
-<script id="graph_data">
-    var nodes = [
-        {id:"n0"},{id:"n1"},{id:"n2"},{id:"n3"},{id:"n4"},{id:"n5"}
-    ];
-    var edges = [
-        {id:"e0",s:"n0",t:"n1"},
-        {id:"e1",s:"n1",t:"n2"},
-        //{id:"e2",s:"n5",t:"n0"},
-        {id:"e3",s:"n2",t:"n3"},
-        {id:"e4",s:"n5",t:"n4"},
-        {id:"e5",s:"n4",t:"n3"}
-    ];
-
-    var g = new Gjs("fof",nodes,edges);
-</script>
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="index.css" media="screen,projection">
+        <script src="dat.gui.min.js"></script>
+        <script src="src/Graph.js"></script>
+        <script src="src/GAlg.js"></script>
+        <script src="src/CanvasManager.js"></script>
+        <script src="src/Camera.js"></script>
+        <script src="src/Gjs.js"></script>
+        <script src="data.js"></script>
+    </head>
+    <body>
+        <canvas id="gcanvas"></canvas>
+    </body>
+    <script>
+        var g = new Gjs("gcanvas",g_data.nodes,g_data.edges);
+    </script>
+    <script src="src/ui.js"></script>
+</html>

@@ -5,7 +5,6 @@ function Gjs(canvas,nodes,edges){
     GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
-    g.setLayout(circleLayout,{r:150});
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
 
@@ -17,37 +16,26 @@ function Gjs(canvas,nodes,edges){
     let nodeBFSTrace=[];
 
     const specialMarked={};
-    specialMarked.nodes={};
-    specialMarked.edges={};
-    specialMarked.nodes.BFSTraceNodeId=[];
-    specialMarked.edges.BFSTraceEdgeId=[];
-
-    this.layout=(layout,data)=>{
-        g.nodesArray.map((node,i)=>{
-            const c = layout(i,g.nodesArray.length,data);
-            node.x=c.x;
-            node.y=c.y;
-        });
-    };
+    specialMarked.nodes=[];
+    specialMarked.edges=[];
 
     const addToBFSTrace = (id)=>{
         if(id===null)return;
         nodeBFSTrace.push(id);
         if(nodeBFSTrace.length===2){
             if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
+                cleanAllProps();
                 const trace = GAlg.BFSTrace(nodeBFSTrace[0], nodeBFSTrace[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
-                    setNodeProp(node, "trace");
+                    setNodeProp(node, "trace", true);
                     if (i < trace.length - 1) {
                         const edge = getEdgeIdByST(node, trace[i + 1]);
-                        setEdgeProp(edge, "trace");
-                        specialMarked.edges.BFSTraceEdgeId.push(edge);
+                        setEdgeProp(edge, "trace", true);
                     }
                 }
-                setNodeProp(trace[0], "trace_s");
-                setNodeProp(trace[trace.length - 1], "trace_t");
-                specialMarked.nodes.BFSTraceNodeId = trace;
+                setNodeProp(trace[0], "trace_s", true);
+                setNodeProp(trace[trace.length - 1], "trace_t", true);
             }
             nodeBFSTrace=[];
         }
@@ -57,6 +45,7 @@ function Gjs(canvas,nodes,edges){
     };
 
     const searchMinCycle = function(){
+        cleanAllProps();
         const traces = GAlg.BFSCycle();
         if(!traces.length)return;
         let min = traces[0].length;
@@ -65,12 +54,21 @@ function Gjs(canvas,nodes,edges){
             if(traces[i].length<min)
                 minI=i;
         }
-        for(let i=0;i<traces[minI].length-1;i++){
-            setNodeProp(traces[minI][i],"cycle");
-            setEdgeProp(getEdgeIdByST(traces[minI][i],traces[minI][i+1]),"cycle")
+        for(let i=0;i<traces[minI].length;i++){
+            setNodeProp(traces[minI][i],"cycle",true);
+            //const edgeId=getEdgeIdByST(traces[minI][i],traces[minI][i+1]);
+            //setEdgeProp(edgeId,"cycle");
         }
     };
-    this.searchMinCycle = searchMinCycle;
+
+    const isBipartite = function(){
+        const bipartite=GAlg.BFSBipartite();
+        const trace = bipartite.trace;
+        Object.keys(trace).map((id)=>{
+            setNodeProp(id,trace[id]?"bipartite1":"bipartite2");
+        });
+        return bipartite;
+    };
 
     const getEdgeIdByST = (s,t)=>{
         for(let i=0;i<g.edgesArray.length;i++){
@@ -79,42 +77,29 @@ function Gjs(canvas,nodes,edges){
                 return edge.id;
         }
     };
-    this.getEdgeIdByST=getEdgeIdByST;
 
-    const setNodeProp = (id,prop)=>{
-        if(id===null)return;
-        let specMarked=false;
-        Object.keys(specialMarked.nodes).map((key)=>{
-            if(specialMarked.nodes[key].includes(id))
-                specMarked=true;
-        });
-        if(specMarked)return;
-        g.nodesIndex[id].prop=prop;
-    };
-    this.setNodeProp=setNodeProp;
-    const setEdgeProp = (id,prop)=>{
+    const setNodeProp = (id,prop,special)=>{
         if(id===null || id===undefined)return;
-        let specMarked=false;
-        Object.keys(specialMarked.edges).map((key)=>{
-            if(specialMarked.edges[key].includes(id))
-                specMarked=true;
-        });
-        if(specMarked)return;
-        g.edgesIndex[id].prop=prop;
+        if(specialMarked.nodes.includes(id) && !special)return;
+        g.nodesIndex[id].prop=prop;
+        if(special===true)
+            specialMarked.nodes.push(id);
     };
-    this.setEdgeProp=setEdgeProp;
+
+    const setEdgeProp = (id,prop,special)=>{
+        if(id===null || id===undefined)return;
+        if(specialMarked.edges.includes(id) && !special)return;
+        g.edgesIndex[id].prop=prop;
+        if(special===true)
+            specialMarked.edges.push(id);
+    };
 
     const cleanAllProps = ()=>{
-        Object.keys(specialMarked.nodes).map((key)=>{
-            specialMarked.nodes[key]=[];
-        });
-        Object.keys(specialMarked.edges).map((key)=>{
-            specialMarked.edges[key]=[];
-        });
+        specialMarked.nodes=[];
+        specialMarked.edges=[];
         g.edgesArray.map((edge)=>edge.prop="");
         g.nodesArray.map((node)=>node.prop="");
     };
-    this.cleanAllProps=cleanAllProps;
 
     const getNodeIdByCoords = (x,y)=>{
         let nodeId=null;
@@ -204,15 +189,67 @@ function Gjs(canvas,nodes,edges){
             }
         }
     };
+
+    //Layouts
+    this.setLayout=(layout,data)=>{
+        g.nodesArray.map((node,i)=>{
+            const c = layout({
+                nodeId:node.id,
+                nodeIndex:i,
+                nodesLength:g.nodesArray.length,
+                data:data
+            });
+            node.x=c.x;
+            node.y=c.y;
+        });
+    };
+
+    this.layout={};
+    this.layout.circle={};
+    this.layout.circle.radius=150;
+    this.layout.grid={};
+    this.layout.grid.offset=70;
+    this.layout.grid.row=3;
+    this.layout.bipartite={};
+    this.layout.bipartite.partOffset=200;
+    this.layout.bipartite.elementOffset=70;
+    this.layout.bipartite.direction='horizontal';
+
+    //GUI stuff
+    this.layoutCircle = ()=>this.setLayout(circleLayout,this.layout.circle);
+    this.layoutGrid = ()=>this.setLayout(gridLayout,this.layout.grid);
+    this.layoutBipartite = ()=>{
+        const bipartite = isBipartite();
+        if(bipartite.bipartite){
+            this.layout.bipartite.leftIndex=0;
+            this.layout.bipartite.rightIndex=0;
+            this.layout.bipartite.trace=bipartite.trace;
+            this.setLayout(bipartiteLayout,this.layout.bipartite);
+        }
+    };
+    this.searchMinCycle = searchMinCycle;
+    this.isBipartite = isBipartite;
+
+    this.setLayout(circleLayout,this.layout.circle);
 }
 
-var circleLayout = function(i,n,data){
-    var x=(data.r*Math.cos(i*2*Math.PI/n))>>0;
-    var y=(data.r*Math.sin(i*2*Math.PI/n))>>0;
+var circleLayout = function(e){
+    var x=(e.data.radius*Math.cos(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
+    var y=(e.data.radius*Math.sin(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
     return {x,y};
 };
-var gridLayout = function(i,n,data){
-    var x=data.r*(i%data.row);
-    var y=data.r*((i/data.row )<<0);
+var gridLayout = function(e){
+    var x=e.data.offset*(e.nodeIndex%e.data.row);
+    var y=e.data.offset*((e.nodeIndex/e.data.row)<<0);
+    return {x,y};
+};
+var bipartiteLayout = function(e) {
+    var x=e.data.trace[e.nodeId]?0:e.data.partOffset;
+    var y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
+    if(e.data.direction==='vertical'){
+        var _=x;
+        x=y;
+        y=_;
+    }
     return {x,y};
 };

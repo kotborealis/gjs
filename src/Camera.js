@@ -9,7 +9,9 @@ const cameraSettings = {
         "trace":"#CE44F4",
         "trace_s":"#5021CC",
         "trace_t":"#CC1205",
-        "cycle":"#A1F69B"
+        "cycle":"#A1F69B",
+        "bipartite1":"#FF5600",
+        "bipartite2":"#0065FF"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
@@ -34,11 +36,11 @@ function Camera(canvasManager,g,cfg){
         edgeRender();
         nodeRender();
         endRender();
-        setTimeout(redraw,50);
-        //requestAnimationFrame(redraw);
+        //setTimeout(redraw,50);
+        requestAnimationFrame(redraw);
     };
-    //requestAnimationFrame(redraw);
-    setTimeout(redraw,50);
+    requestAnimationFrame(redraw);
+    //setTimeout(redraw,50);
 
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
@@ -50,6 +52,7 @@ function Camera(canvasManager,g,cfg){
         ctx.restore();
     };
 
+
     const nodeRender = ()=>{
         ctx.font="20px Arial";
         g.nodesArray.map((node)=>{
@@ -58,20 +61,28 @@ function Camera(canvasManager,g,cfg){
             ctx.arc(node.x,node.y,node.size,0,2*Math.PI,false);
             ctx.fill();
             ctx.closePath();
-            ctx.fillStyle="black";
+            ctx.fillStyle="#0c0c0c";
             ctx.fillText(node.id,node.x,node.y);
         });
     };
 
     const edgeRender = ()=>{
         ctx.lineWidth=cfg.edgeWidth[""];
-        g.edgesArray.map((edge)=>{
+        ctx.font="20px Arial";
+        ctx.fillStyle="#0c0c0c";
+        g.edgesArray.map((edge)=>{//∞
             ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
             ctx.beginPath();
             ctx.moveTo(g.nodesIndex[edge.s].x,g.nodesIndex[edge.s].y);
             ctx.lineTo(g.nodesIndex[edge.t].x,g.nodesIndex[edge.t].y);
             ctx.stroke();
             ctx.closePath();
+            const edgeText=edge.weight===Number.POSITIVE_INFINITY?"inf":edge.weight;
+            let edgeTextX = g.nodesIndex[edge.s].x+g.nodesIndex[edge.t].x;
+            edgeTextX/=2;
+            let edgeTextY = g.nodesIndex[edge.s].y+g.nodesIndex[edge.t].y;
+            edgeTextY/=2;
+            ctx.fillText(edgeText,edgeTextX,edgeTextY);
         });
     };
 
