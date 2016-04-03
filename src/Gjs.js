@@ -230,6 +230,10 @@ function Gjs(canvas){
     this.searchMinCycle = searchMinCycle;
     this.isBipartite = isBipartite;
     this.camera = camera;
+    this.saveFile = ()=>{
+        const data=JSON.stringify({nodes:g.nodesArray,edges:g.edgesArray});
+        saveAs(new Blob([data], {type: "application/json;charset=utf-8"}),randomString(10)+".json");
+    }
 }
 
 //layout functions

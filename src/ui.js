@@ -1,12 +1,13 @@
 const gui = new dat.GUI();
 
-window.___={};
-window.___.fileName="";
+window.___={};window.___.fileName="";
 const fileLoader = gui.add(window.___,'fileName');
 fileLoader.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
 
 const fileLoaderQuickSelect = gui.add(window.___,'fileName',["Basic1.json","Dijkstra1.json"]);;
 fileLoaderQuickSelect.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
+
+gui.add(g,'saveFile');
 
 const options = gui.addFolder("Display");
 options.add(g.camera.options.display,'id');

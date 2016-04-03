@@ -19,3 +19,11 @@ const loadJSonFromURL = function(url, callback){
     };
     _.send(null);
 };
+
+const randomString = function(l){
+    let r="";
+    while(l--){
+        r+=String.fromCharCode(((Math.random()*25)>>0)+65);
+    }
+    return r;
+};
