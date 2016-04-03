@@ -66,7 +66,7 @@ function Camera(canvasManager,g,cfg){
 
             const font_size = node.size+5;
             let offset=-font_size/2;
-            ctx.font=font_size+"px Arial";
+            ctx.font=font_size+"px monospace";
             ctx.fillStyle="#0c0c0c";
             if(this.options.display.label===true && node.label!=="") {
                 ctx.fillText(node.label, node.x + node.size, node.y + offset);
@@ -85,7 +85,7 @@ function Camera(canvasManager,g,cfg){
 
     const edgeRender = ()=>{
         ctx.lineWidth=cfg.edgeWidth[""];
-        ctx.font="16px Arial";
+        ctx.font="16px monospace";
         ctx.fillStyle="#0c0c0c";
         g.edgesArray.map((edge)=>{
             ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];

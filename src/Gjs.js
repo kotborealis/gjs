@@ -2,7 +2,6 @@
 
 function Gjs(canvas,nodes,edges){
     var g = new Graph();
-    GAlg.g = g;
     g.addNode(nodes);
     g.addEdge(edges);
     var canvasManager = new CanvasManager(canvas);
@@ -26,12 +25,13 @@ function Gjs(canvas,nodes,edges){
         if(pathFindingNodes.length===2){
             if(pathFindingNodes[0]!==pathFindingNodes[1]) {
                 cleanAllProps();
-                const trace = GAlg[this.pathFinderFunction](pathFindingNodes[0], pathFindingNodes[1]);
+                console.log(this.pathFinderFunction);
+                const trace = alg[this.pathFinderFunction](g,pathFindingNodes[0], pathFindingNodes[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
                     setNodeProp(node, "trace", true);
                     if (i < trace.length - 1) {
-                        const edge = getEdgeIdByST(node, trace[i + 1]);
+                        const edge = g.getEdgeIdByST(node, trace[i + 1]);
                         setEdgeProp(edge, "trace", true);
                     }
                 }
@@ -46,37 +46,16 @@ function Gjs(canvas,nodes,edges){
     };
 
     const searchMinCycle = function(){
-        cleanAllProps();
-        const traces = GAlg.BFSCycle();
-        if(!traces.length)return;
-        let min = traces[0].length;
-        let minI = 0;
-        for(let i=1;i<traces.length;i++){
-            if(traces[i].length<min)
-                minI=i;
-        }
-        for(let i=0;i<traces[minI].length;i++){
-            setNodeProp(traces[minI][i],"cycle",true);
-            //const edgeId=getEdgeIdByST(traces[minI][i],traces[minI][i+1]);
-            //setEdgeProp(edgeId,"cycle");
-        }
+
     };
 
     const isBipartite = function(){
-        const bipartite=GAlg.BFSBipartite();
+        const bipartite=alg.BFSBipartite(g);
         const trace = bipartite.trace;
         Object.keys(trace).map((id)=>{
-            setNodeProp(id,trace[id]?"bipartite1":"bipartite2");
+            setNodeProp(id,trace[id]?"bipartite1":"bipartite2",true);
         });
         return bipartite;
-    };
-
-    const getEdgeIdByST = (s,t)=>{
-        for(let i=0;i<g.edgesArray.length;i++){
-            const edge=g.edgesArray[i];
-            if((edge.s===s && edge.t===t) || (edge.s===t && edge.t===s))
-                return edge.id;
-        }
     };
 
     const setNodeProp = (id,prop,special)=>{
@@ -221,7 +200,7 @@ function Gjs(canvas,nodes,edges){
     this.layout.bipartite.elementOffset=70;
     this.layout.bipartite.direction='horizontal';
 
-    this.pathFinderFunction = "BFSTrace";
+    this.pathFinderFunction = "BFSPath";
 
     //GUI stuff
     this.layoutCircle = ()=>this.setLayout(circleLayout,this.layout.circle);

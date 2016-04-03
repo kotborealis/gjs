@@ -22,7 +22,7 @@ bipartite_layout.add(g.layout.bipartite,'direction',['horizontal','vertical']);
 bipartite_layout.add(g,'layoutBipartite');
 
 var pathFinder = gui.addFolder("Path Finder");
-pathFinder.add(g,'pathFinderFunction',["BFSTrace","DijkstraTrace"]);
+pathFinder.add(g,'pathFinderFunction',["BFSPath","DijkstraPath"]);
 
 var funcs = gui.addFolder("Functions");
 funcs.add(g,'searchMinCycle');
