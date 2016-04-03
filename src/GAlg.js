@@ -27,7 +27,7 @@ GAlg.BFSTraceTravel = function(root, target){
     }
     return false;
 };
-GAlg.BFSRawTraceReverse = function (s, t, trace) {
+GAlg.BFSTraceReverse = function (s, t, trace) {
     let c_node=t;
     const s_trace=[];
     s_trace.push(t);
@@ -49,7 +49,7 @@ GAlg.BFSTrace = function(source,target){
     const raw_trace = GAlg.BFSTraceTravel(source,target);
     if(!raw_trace)
         return [];
-    return GAlg.BFSRawTraceReverse(source, target, raw_trace);
+    return GAlg.BFSTraceReverse(source, target, raw_trace);
 };
 
 
@@ -111,4 +111,63 @@ GAlg.BFSBipartiteTravel = function(root){
 };
 GAlg.BFSBipartite = function(){
     return GAlg.BFSBipartiteTravel(GAlg.g.nodesArray[0].id);
+};
+
+/**
+ *  Dijkstra Trace
+ */
+GAlg.DijkstraTraceTravel = function(source){
+    const trace={};
+    const node_set=[];
+    const visited={};
+
+    GAlg.g.nodesArray.map((node)=>{
+        node_set.push(node.id);
+        trace[node.id]={};
+        trace[node.id].dist=Number.POSITIVE_INFINITY;
+    });
+
+    trace[source].dist=0;
+    while(node_set.length>0){
+        let min_dist=Number.POSITIVE_INFINITY;
+        let min_node_i=0;
+        let node=null;
+        for(let i=0;i<Object.keys(trace).length;i++){
+            const id = Object.keys(trace)[i];
+            if(trace[id].dist<min_dist && visited[id]!==true){
+                min_dist=trace[id].dist;
+                node=id;
+                min_node_i=i;
+            }
+        }
+        if(node===null)
+            break;
+        visited[node]=true;
+
+        for(let i=0;i<GAlg.g.nodeNeighbourNodes[node].length;i++){
+            const child = GAlg.g.nodeNeighbourNodes[node][i];
+            const alt = trace[node].dist + GAlg.g.getEdgeWeight(node,child);
+            if(alt<trace[child].dist){
+                trace[child].dist=alt;
+                trace[child].prev=node;
+            }
+        }
+    }
+    return trace;
+};
+GAlg.DijkstraTraceReverse = function(source, target, trace){
+    const s_trace = [];
+    let node = target;
+    s_trace.unshift(target);
+    while(trace[node].prev!==undefined){
+        s_trace.unshift(trace[node].prev);
+        node=trace[node].prev;
+    }
+    return s_trace;
+};
+GAlg.DijkstraTrace = function(source, target){
+    const trace = GAlg.DijkstraTraceTravel(source,target);
+    if(!trace)
+        return [];
+    return GAlg.DijkstraTraceReverse(source, target, trace);
 };

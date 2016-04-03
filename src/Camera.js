@@ -57,25 +57,35 @@ function Camera(canvasManager,g,cfg){
 
 
     const nodeRender = ()=>{
-        ctx.font="20px Arial";
         g.nodesArray.map((node)=>{
             ctx.fillStyle=cfg.nodeColor.hasOwnProperty(node.prop)?cfg.nodeColor[node.prop]:cfg.nodeColor[""];
             ctx.beginPath();
             ctx.arc(node.x,node.y,node.size,0,2*Math.PI,false);
             ctx.fill();
             ctx.closePath();
+
+            const font_size = node.size+5;
+            let offset=-font_size/2;
+            ctx.font=font_size+"px Arial";
             ctx.fillStyle="#0c0c0c";
-            ctx.fillText(node.id,node.x,node.y-10);
-            if(node.gen_label!=="")
-                ctx.fillText(node.gen_label,node.x,node.y+10);
-            else
-                ctx.fillText(node.label,node.x,node.y+10);
+            if(this.options.display.label===true && node.label!=="") {
+                ctx.fillText(node.label, node.x + node.size, node.y + offset);
+                offset+=font_size;
+            }
+            if(this.options.display.id===true) {
+                ctx.fillText(node.id, node.x + node.size, node.y + offset);
+                offset+=font_size;
+            }
+            if(this.options.display.value===true) {
+                ctx.fillText(JSON.stringify(node.value), node.x + node.size, node.y + offset);
+                offset+=font_size;
+            }
         });
     };
 
     const edgeRender = ()=>{
         ctx.lineWidth=cfg.edgeWidth[""];
-        ctx.font="20px Arial";
+        ctx.font="16px Arial";
         ctx.fillStyle="#0c0c0c";
         g.edgesArray.map((edge)=>{
             ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
@@ -84,12 +94,14 @@ function Camera(canvasManager,g,cfg){
             ctx.lineTo(g.nodesIndex[edge.t].x,g.nodesIndex[edge.t].y);
             ctx.stroke();
             ctx.closePath();
-            const edgeText=edge.weight===Number.POSITIVE_INFINITY?"inf":edge.weight;
-            let edgeTextX = g.nodesIndex[edge.s].x+g.nodesIndex[edge.t].x;
-            edgeTextX/=2;
-            let edgeTextY = g.nodesIndex[edge.s].y+g.nodesIndex[edge.t].y;
-            edgeTextY/=2;
-            ctx.fillText(edgeText,edgeTextX,edgeTextY);
+            if(this.options.display.weight===true) {
+                const edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
+                let edgeTextX = g.nodesIndex[edge.s].x + g.nodesIndex[edge.t].x;
+                edgeTextX /= 2;
+                let edgeTextY = g.nodesIndex[edge.s].y + g.nodesIndex[edge.t].y;
+                edgeTextY /= 2;
+                ctx.fillText(edgeText, edgeTextX, edgeTextY);
+            }
         });
     };
 
@@ -111,4 +123,12 @@ function Camera(canvasManager,g,cfg){
         y = y/zoomFactor+viewport().y;
         return {x,y};
     };
+
+    //GUI vars
+    this.options={};
+    this.options.display={};
+    this.options.display.id=true;
+    this.options.display.label=true;
+    this.options.display.value=true;
+    this.options.display.weight=true;
 }

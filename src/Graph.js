@@ -51,6 +51,28 @@ function Graph(settings){
         return __addEdge({id:"EDGE!!_"+_EDGE_ID_GEN++,s,t});
     };
 
+    this.getEdgeIdByST = (source,target)=>{
+        for(let i=0;i<this.nodeNeighbourEdges[source].length;i++){
+            const id = this.nodeNeighbourEdges[source][i];
+            const edge = this.edgesIndex[id];
+            if(edge.s === source && edge.t === target ||
+                edge.t === source && edge.s === target)
+                return id;
+        }
+        return null;
+    };
+    this.getEdgeWeight = (source,target)=>{
+        if(target===undefined)
+            return this.edgesIndex[source].weight;
+        else {
+            const edge = this.edgesIndex[this.getEdgeIdByST(source,target)];
+            if (edge === null)
+                return null;
+            else
+                return edge.weight;
+        }
+    };
+
     const __addNode = function(node){
         if(!node.id || (typeof node.id!=='string' && typeof node.id!=='number'))
             throw new Error("Invalid node ID");
@@ -61,13 +83,13 @@ function Graph(settings){
         _node.label=node.label||"";
         _node.size=node.size||10;
         _node.id = node.id;
+        _node.value=node.value||{};
 
         _node.x = node.x||0;
         _node.y = node.y||0;
 
         _node.active = false;
         _node.highlight = false;
-        _node.gen_label = "";
 
         self.nodesArray.push(_node);
         self.nodesIndex[_node.id]=_node;
@@ -107,13 +129,5 @@ function Graph(settings){
         self.nodeNeighbourEdges[_edge.s].push(_edge.id);
 
         return _edge.id;
-    };
-
-    this.setLayout = function(layout,data){
-        for(let i=0;i<self.nodesArray.length;i++){
-            const c = layout(i,self.nodesArray.length,data);
-            self.nodesArray[i].x = c.x;
-            self.nodesArray[i].y = c.y;
-        }
     };
 }

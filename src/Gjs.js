@@ -7,25 +7,26 @@ function Gjs(canvas,nodes,edges){
     g.addEdge(edges);
     var canvasManager = new CanvasManager(canvas);
     var camera = new Camera(canvasManager,g);
+    this.camera = camera;
 
     let hoverNodeId=null;
     let highlightNodeId=[];
     let highlightEdgeId=[];
     let dragNodeId=null;
     let edgeSourceNodeId=null;
-    let nodeBFSTrace=[];
+    let pathFindingNodes=[];
 
     const specialMarked={};
     specialMarked.nodes=[];
     specialMarked.edges=[];
 
-    const addToBFSTrace = (id)=>{
+    const addToPathFinding = (id)=>{
         if(id===null)return;
-        nodeBFSTrace.push(id);
-        if(nodeBFSTrace.length===2){
-            if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
+        pathFindingNodes.push(id);
+        if(pathFindingNodes.length===2){
+            if(pathFindingNodes[0]!==pathFindingNodes[1]) {
                 cleanAllProps();
-                const trace = GAlg.BFSTrace(nodeBFSTrace[0], nodeBFSTrace[1]);
+                const trace = GAlg[this.pathFinderFunction](pathFindingNodes[0], pathFindingNodes[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
                     setNodeProp(node, "trace", true);
@@ -37,10 +38,10 @@ function Gjs(canvas,nodes,edges){
                 setNodeProp(trace[0], "trace_s", true);
                 setNodeProp(trace[trace.length - 1], "trace_t", true);
             }
-            nodeBFSTrace=[];
+            pathFindingNodes=[];
         }
-        else if(nodeBFSTrace.length>2){
-            nodeBFSTrace=[];
+        else if(pathFindingNodes.length>2){
+            pathFindingNodes=[];
         }
     };
 
@@ -166,7 +167,7 @@ function Gjs(canvas,nodes,edges){
 
     canvasManager.onclick=(e)=>{
         cleanAllProps();
-        addToBFSTrace(getNodeIdByCoords(e.x,e.y));
+        addToPathFinding(getNodeIdByCoords(e.x,e.y));
     };
 
     canvasManager.ondblclick=(e)=>{
@@ -219,6 +220,8 @@ function Gjs(canvas,nodes,edges){
     this.layout.bipartite.partOffset=200;
     this.layout.bipartite.elementOffset=70;
     this.layout.bipartite.direction='horizontal';
+
+    this.pathFinderFunction = "BFSTrace";
 
     //GUI stuff
     this.layoutCircle = ()=>this.setLayout(circleLayout,this.layout.circle);
