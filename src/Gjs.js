@@ -1,83 +1,99 @@
 'use strict';
 
-function Gjs(canvas,nodes,edges){
-    var g = new Graph();
-    GAlg.g = g;
-    g.addNode(nodes);
-    g.addEdge(edges);
-    var canvasManager = new CanvasManager(canvas);
-    var camera = new Camera(canvasManager,g);
-
+function Gjs(canvas){
+    const g = new Graph();
+    const canvasManager = new CanvasManager(canvas);
+    const camera = new Camera(canvasManager,g);
+this.g=g;
     let hoverNodeId=null;
     let highlightNodeId=[];
     let highlightEdgeId=[];
     let dragNodeId=null;
     let edgeSourceNodeId=null;
-    let nodeBFSTrace=[];
+    let pathFindingNodes=[];
 
     const specialMarked={};
     specialMarked.nodes=[];
     specialMarked.edges=[];
 
-    const addToBFSTrace = (id)=>{
+    //Graph Functions
+    this.loadFromFile = (file)=>{
+        loadJsonFromFile(file,(json)=>{
+            cleanAllProps();
+            pathFindingNodes=[];
+            dragNodeId=null;
+            edgeSourceNodeId=null;
+            hoverNodeId=null;
+            highlightEdgeId=[];
+            highlightNodeId=[];
+            specialMarked.nodes=[];
+            specialMarked.edges=[];
+            g.clear();
+            if(json.hasOwnProperty("nodes") && json.hasOwnProperty("edges")){
+                g.addNode(json.nodes);
+                g.addEdge(json.edges);
+            }
+        });
+    };
+
+    const addToPathFinding = (id)=>{
         if(id===null)return;
-        nodeBFSTrace.push(id);
-        if(nodeBFSTrace.length===2){
-            if(nodeBFSTrace[0]!==nodeBFSTrace[1]) {
+        pathFindingNodes.push(id);
+        if(pathFindingNodes.length===2){
+            if(pathFindingNodes[0]!==pathFindingNodes[1]) {
                 cleanAllProps();
-                const trace = GAlg.BFSTrace(nodeBFSTrace[0], nodeBFSTrace[1]);
+                console.log(this.pathFinderFunction);
+                const trace = alg[this.pathFinderFunction](g,pathFindingNodes[0], pathFindingNodes[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
                     setNodeProp(node, "trace", true);
                     if (i < trace.length - 1) {
-                        const edge = getEdgeIdByST(node, trace[i + 1]);
+                        const edge = g.getEdgeIdByST(node, trace[i + 1]);
                         setEdgeProp(edge, "trace", true);
                     }
                 }
                 setNodeProp(trace[0], "trace_s", true);
                 setNodeProp(trace[trace.length - 1], "trace_t", true);
             }
-            nodeBFSTrace=[];
+            pathFindingNodes=[];
         }
-        else if(nodeBFSTrace.length>2){
-            nodeBFSTrace=[];
+        else if(pathFindingNodes.length>2){
+            pathFindingNodes=[];
         }
     };
 
     const searchMinCycle = function(){
-        cleanAllProps();
-        const traces = GAlg.BFSCycle();
-        if(!traces.length)return;
-        let min = traces[0].length;
-        let minI = 0;
-        for(let i=1;i<traces.length;i++){
-            if(traces[i].length<min)
-                minI=i;
+        const traces=alg.BFSCycle(g);
+        let min_length=Number.POSITIVE_INFINITY;
+        let min_i=-1;
+        for(let i=0;i<traces.length;i++){
+            if(traces[i].length<min_length){
+                min_length=traces[i].length;
+                min_i=i;
+            }
         }
-        for(let i=0;i<traces[minI].length;i++){
-            setNodeProp(traces[minI][i],"cycle",true);
-            //const edgeId=getEdgeIdByST(traces[minI][i],traces[minI][i+1]);
-            //setEdgeProp(edgeId,"cycle");
+        if(min_i===-1)return;
+
+        for(let i=0;i<traces[min_i].length;i++){
+            const node = traces[min_i][i];
+            setNodeProp(node,"cycle", true);
+            if (i < traces[min_i].length - 1) {
+                const edge = g.getEdgeIdByST(node, traces[min_i][i + 1]);
+                setEdgeProp(edge, "cycle", true);
+            }
         }
     };
 
     const isBipartite = function(){
-        const bipartite=GAlg.BFSBipartite();
+        const bipartite=alg.BFSBipartite(g);
         const trace = bipartite.trace;
         Object.keys(trace).map((id)=>{
-            setNodeProp(id,trace[id]?"bipartite1":"bipartite2");
+            setNodeProp(id,trace[id]?"bipartite1":"bipartite2",true);
         });
         return bipartite;
     };
 
-    const getEdgeIdByST = (s,t)=>{
-        for(let i=0;i<g.edgesArray.length;i++){
-            const edge=g.edgesArray[i];
-            if((edge.s===s && edge.t===t) || (edge.s===t && edge.t===s))
-                return edge.id;
-        }
-    };
-
+    //util functions
     const setNodeProp = (id,prop,special)=>{
         if(id===null || id===undefined)return;
         if(specialMarked.nodes.includes(id) && !special)return;
@@ -111,6 +127,8 @@ function Gjs(canvas,nodes,edges){
         return nodeId;
     };
 
+
+    //events
     const onNodeHover = (id)=>{
         setNodeProp(hoverNodeId,"");
         setNodeProp(id,"hover");
@@ -166,7 +184,7 @@ function Gjs(canvas,nodes,edges){
 
     canvasManager.onclick=(e)=>{
         cleanAllProps();
-        addToBFSTrace(getNodeIdByCoords(e.x,e.y));
+        addToPathFinding(getNodeIdByCoords(e.x,e.y));
     };
 
     canvasManager.ondblclick=(e)=>{
@@ -220,7 +238,10 @@ function Gjs(canvas,nodes,edges){
     this.layout.bipartite.elementOffset=70;
     this.layout.bipartite.direction='horizontal';
 
-    //GUI stuff
+    //Pathfinder
+    this.pathFinderFunction = "BFSPath";
+
+    //GUI
     this.layoutCircle = ()=>this.setLayout(circleLayout,this.layout.circle);
     this.layoutGrid = ()=>this.setLayout(gridLayout,this.layout.grid);
     this.layoutBipartite = ()=>{
@@ -234,23 +255,29 @@ function Gjs(canvas,nodes,edges){
     };
     this.searchMinCycle = searchMinCycle;
     this.isBipartite = isBipartite;
+    this.camera = camera;
+    this.saveFile = ()=>{
+        const data=JSON.stringify({nodes:g.nodesArray,edges:g.edgesArray});
+        saveAs(new Blob([data], {type: "application/json;charset=utf-8"}),randomString(10)+".json");
+    }
 }
 
-var circleLayout = function(e){
-    var x=(e.data.radius*Math.cos(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
-    var y=(e.data.radius*Math.sin(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
+//layout functions
+const circleLayout = function(e){
+    const x=(e.data.radius*Math.cos(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
+    const y=(e.data.radius*Math.sin(e.nodeIndex*2*Math.PI/e.nodesLength))>>0;
     return {x,y};
 };
-var gridLayout = function(e){
-    var x=e.data.offset*(e.nodeIndex%e.data.row);
-    var y=e.data.offset*((e.nodeIndex/e.data.row)<<0);
+const gridLayout = function(e){
+    const x=e.data.offset*(e.nodeIndex%e.data.row);
+    const y=e.data.offset*((e.nodeIndex/e.data.row)<<0);
     return {x,y};
 };
-var bipartiteLayout = function(e) {
-    var x=e.data.trace[e.nodeId]?0:e.data.partOffset;
-    var y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
+const bipartiteLayout = function(e) {
+    let x=e.data.trace[e.nodeId]?0:e.data.partOffset;
+    let y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
     if(e.data.direction==='vertical'){
-        var _=x;
+        const _=x;
         x=y;
         y=_;
     }
