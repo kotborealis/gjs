@@ -2,7 +2,6 @@
 
 const loadJsonFromFile = function(file, callback){
     let path = location.pathname.split('/');
-    console.log(path);
     path.pop();
     path=path.join("/")+"/";
     loadJSonFromURL("http://"+location.host+path+file, callback);

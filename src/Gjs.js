@@ -4,7 +4,7 @@ function Gjs(canvas){
     const g = new Graph();
     const canvasManager = new CanvasManager(canvas);
     const camera = new Camera(canvasManager,g);
-
+this.g=g;
     let hoverNodeId=null;
     let highlightNodeId=[];
     let highlightEdgeId=[];
@@ -20,6 +20,14 @@ function Gjs(canvas){
     this.loadFromFile = (file)=>{
         loadJsonFromFile(file,(json)=>{
             cleanAllProps();
+            pathFindingNodes=[];
+            dragNodeId=null;
+            edgeSourceNodeId=null;
+            hoverNodeId=null;
+            highlightEdgeId=[];
+            highlightNodeId=[];
+            specialMarked.nodes=[];
+            specialMarked.edges=[];
             g.clear();
             if(json.hasOwnProperty("nodes") && json.hasOwnProperty("edges")){
                 g.addNode(json.nodes);
@@ -55,7 +63,25 @@ function Gjs(canvas){
     };
 
     const searchMinCycle = function(){
+        const traces=alg.BFSCycle(g);
+        let min_length=Number.POSITIVE_INFINITY;
+        let min_i=-1;
+        for(let i=0;i<traces.length;i++){
+            if(traces[i].length<min_length){
+                min_length=traces[i].length;
+                min_i=i;
+            }
+        }
+        if(min_i===-1)return;
 
+        for(let i=0;i<traces[min_i].length;i++){
+            const node = traces[min_i][i];
+            setNodeProp(node,"cycle", true);
+            if (i < traces[min_i].length - 1) {
+                const edge = g.getEdgeIdByST(node, traces[min_i][i + 1]);
+                setEdgeProp(edge, "cycle", true);
+            }
+        }
     };
 
     const isBipartite = function(){

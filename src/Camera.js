@@ -38,11 +38,9 @@ function Camera(canvasManager,g,cfg){
         edgeRender();
         nodeRender();
         endRender();
-        //setTimeout(redraw,50);
-        requestAnimationFrame(redraw);
+        setTimeout(()=>requestAnimationFrame(redraw),100);
     };
-    requestAnimationFrame(redraw);
-    //setTimeout(redraw,50);
+    setTimeout(()=>requestAnimationFrame(redraw),100);
 
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
