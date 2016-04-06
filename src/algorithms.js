@@ -32,7 +32,7 @@ alg.BFSCycle = (g)=>{
         });
 
         if(CycleNode===null)
-            return [];
+            continue;
 
         let node = CycleNode;
         const s_trace=[];
@@ -66,6 +66,7 @@ alg.BFSCycle = (g)=>{
                 }
             }
         }
+
         if(s_trace[0]===s_trace[s_trace.length-1])
             traces.push(s_trace);
     }
