@@ -28,6 +28,8 @@ const cameraSettings = {
 function Camera(canvasManager,g,cfg){
     cfg=cfg||cameraSettings;
 
+    const _slow_render = localStorage.getItem("slowRender");
+
     const ctx = canvasManager.ctx;
     this.viewportOffset={x:0,y:0};
 
@@ -38,9 +40,12 @@ function Camera(canvasManager,g,cfg){
         edgeRender();
         nodeRender();
         endRender();
-        setTimeout(()=>requestAnimationFrame(redraw),100);
+        if(_slow_render!==null)
+            setTimeout(()=>requestAnimationFrame(redraw),_slow_render);
+        else
+            requestAnimationFrame(redraw);
     };
-    setTimeout(()=>requestAnimationFrame(redraw),100);
+    requestAnimationFrame(redraw);
 
     const startRender = ()=>{
         canvasManager.clear(cfg.bgColor);
