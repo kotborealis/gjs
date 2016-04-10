@@ -9,12 +9,14 @@ const alg={};
  * @constructor
  */
 alg.BFSPath = (g, source, target)=>{
+    let found = false;
     const trace = BFS(g, source, (e)=>{
         if(e.node===target){
+            found = true;
             return true;
-    }
+        }
     });
-    if(!trace)
+    if(!trace || !found)
         return [];
     return BFSTracePath(g, source, target, trace);
 };
@@ -93,6 +95,28 @@ alg.BFSBipartite = (g)=>{
         }
     });
     return result;
+};
+
+alg.BFSConnectedComponent = (g)=>{
+    const visited = [];
+    g.nodesArray.map(node=>visited[node.id]=false);
+    let count = 0;
+    return alg.BFSConnectedComponentHelper(g,visited,count);
+};
+
+alg.BFSConnectedComponentHelper = (g,visited,count)=>{
+    let node=null;
+    for(let i=0;i<Object.keys(visited).length;i++){
+        const id = Object.keys(visited)[i];
+        if(visited[id]===false){
+            node = id;
+            break;
+        }
+    }
+    if(node===null)return count;
+
+    BFS(g,node,e=>{visited[e.node]=true;return false;},()=>{});
+    return alg.BFSConnectedComponentHelper(g,visited,++count);
 };
 
 /**
