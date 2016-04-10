@@ -83,6 +83,20 @@ function Graph(settings){
         this.nodeNeighbourEdges={};
     };
 
+    this.getAdjacencyMatrix = ()=>{
+        let matrix = [];
+        for(let i=0;i<this.nodesArray.length;i++) {
+            matrix[i]=[];
+            for(let j=0;j<this.nodesArray.length;j++)
+                if(this.nodeNeighbourNodes[this.nodesArray[i].id].includes(this.nodesArray[j].id))
+                    matrix[i][j] = 1;
+                else
+                    matrix[i][j] = 0;
+        }
+        console.log(matrix);
+        return matrix;
+    };
+
     const __addNode = function(node){
         if(!node.id || (typeof node.id!=='string' && typeof node.id!=='number'))
             throw new Error("Invalid node ID");
@@ -137,6 +151,14 @@ function Graph(settings){
 
         self.nodeNeighbourNodes[_edge.s].push(_edge.t);
         self.nodeNeighbourEdges[_edge.s].push(_edge.id);
+
+        self.nodeNeighbourNodes[_edge.t].sort();
+        self.nodeNeighbourEdges[_edge.t].sort();
+
+        self.nodeNeighbourNodes[_edge.s].sort();
+        self.nodeNeighbourEdges[_edge.s].sort();
+
+        self.nodesArray.sort((a,b)=>a.id.localeCompare(b.id));
 
         return _edge.id;
     };
