@@ -1,11 +1,9 @@
 "use strict";
 
 /**
- * Heap's algorithm
- * Usage:
- * const permutation = Permutation(n);
- * permutation.next();//-> {value:[],done:{boolean}}
- * @param n
+ * Generator function for Heap's algorithm
+ * new Permutation(n).next().value returns next permutation of n elements
+ * @param {Number} n Permutation elements
  */
 function* Permutation(n){
     const permutation = new Array(n);
