@@ -9,9 +9,11 @@ module.exports.swapMatrixRows=(matrix,a,b)=>{
 module.exports.swapMatrixColumns=(matrix,a,b)=>{
     let _;
     for(let i=0;i<matrix.length;i++){
-        _=matrix[i][a];
-        matrix[i][a]=matrix[i][b];
-        matrix[i][b]=_;
+        if(matrix[i][a]^matrix[i][a]){
+            _=matrix[i][a];
+            matrix[i][a]=matrix[i][b];
+            matrix[i][b]=_;
+        }
     }
 };
 
