@@ -23,7 +23,7 @@ module.exports = function(a,b,timeout,log){
                 console.log(`Found isomorphic permutation: ${p.value}`);
                 console.log(`Done in ${(new Date().getTime()) - _time}ms`);
             }
-            return {permutation:_,isomorphic:true};
+            return {permutation:p.value,isomorphic:true};
         }
         p=permutation.next();
     }
