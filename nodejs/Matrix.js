@@ -21,7 +21,7 @@ module.exports.swapMatrixRows=(matrix,a,b)=>{
 module.exports.swapMatrixColumns=(matrix,a,b)=>{
     let _;
     for(let i=0;i<matrix.length;i++){
-        if(matrix[i][a]^matrix[i][a]){
+        if(matrix[i][a] ^ matrix[i][b]){
             _=matrix[i][a];
             matrix[i][a]=matrix[i][b];
             matrix[i][b]=_;
