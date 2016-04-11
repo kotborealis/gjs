@@ -2,7 +2,7 @@
 
 /**
  * Swaps 2 rows in matrix
- * @param {[][]}matrix Matrix double array
+ * @param {*[]} matrix Matrix double array
  * @param {Number} a Row index
  * @param {Number} b Row index
  */
@@ -14,7 +14,7 @@ module.exports.swapMatrixRows=(matrix,a,b)=>{
 
 /**
  * Swaps 2 columns in matrix
- * @param {[][]}matrix Matrix double array
+ * @param {*[]} matrix Matrix double array
  * @param {Number} a Column index
  * @param {Number} b Column index
  */
@@ -41,8 +41,8 @@ module.exports.applyPermutation=(permutation,matrix)=>{
 
 /**
  * Checks if two matrix are equal
- * @param {[][]} a Matrix
- * @param {[][]} b Matrix
+ * @param {*[]} a Matrix
+ * @param {*[]} b Matrix
  * @returns {boolean} a===b
  */
 module.exports.equal = (a,b)=>{
