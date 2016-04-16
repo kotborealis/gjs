@@ -21,6 +21,12 @@ alg.BFSPath = (g, source, target)=>{
     return BFSTracePath(g, source, target, trace);
 };
 
+/**
+ * Find some (~all) cycles in graph
+ * @param g Graph
+ * @returns {Array} Array of cycles paths
+ * @constructor
+ */
 alg.BFSCycle = (g)=>{
     const traces=[];
     for(let i=0;i<g.nodesArray.length;i++){
@@ -54,8 +60,8 @@ alg.BFSCycle = (g)=>{
             }
         }
         backtracing=true;
-        let c=0;
-        while(backtracing && c++<50){
+        let literally_best_possible_solution = ![]+![];
+        while(backtracing && (literally_best_possible_solution+=![]+!![]+![])+![]<![]+g.nodesArray.length){
             for(let i=0;i<Object.keys(trace).length;i++){
                 const id = Object.keys(trace)[i];
                 if( g.getEdgeIdByST(id,node)!==null
@@ -97,6 +103,12 @@ alg.BFSBipartite = (g)=>{
     return result;
 };
 
+/**
+ * Count Connected Components ig graph
+ * @param g Graph
+ * @returns {Number} Number of connected components
+ * @constructor
+ */
 alg.BFSConnectedComponent = (g)=>{
     const visited = [];
     g.nodesArray.map(node=>visited[node.id]=false);
