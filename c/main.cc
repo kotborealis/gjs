@@ -72,14 +72,17 @@ int main(int argc, char** argv){
     }
     std::cout<<"A\n";
     printMatrix(a,n);
+    std::cout<<"B\n";
+    printMatrix(b,n);
 
     for(int i=0;i<n;i++){
         permutation[i]=i;
         idx[i]=0;
     }
     int counter=0;
-    for (int i=1;i<n;counter++){
+    for (int i=1;i<n;){
         if(idx[i]<i){
+        	counter++;
             int swap = i%2*idx[i];
             int tmp = permutation[swap];
             permutation[swap] = permutation[i];
@@ -102,6 +105,9 @@ int main(int argc, char** argv){
             				a_temp[j][k]=1;
             				break;
                 		}
+    		printPermutation(permutation,n);
+    		std::cout<<"A_ cols\n";
+		    printMatrix(a_temp,n);
             //swap rows
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++)
@@ -110,12 +116,25 @@ int main(int argc, char** argv){
             				a_[j][k]=1;
             				break;
                 		}
-    		return 0;
+			std::cout<<"A_ rows\n";
+		    printMatrix(a_,n);
+    		_ = 0;
+    		for(int j=0;j<n&&!_;j++)
+                for(int k=0;k<n&&!_;k++)
+                	if(a_[j][k]!=b[j][k]){
+                		_=1;
+                	}
+        	if(_==0){
+        		double tEnd = (double)(clock() - tStart)/CLOCKS_PER_SEC;
+    			std::cout<<tEnd<<"s GOTCHA FAGGOT\n";
+    			printPermutation(permutation,n);
+    			return 1;
+        	}
         }
         else
             idx[i++] = 0;
     }
     double tEnd = (double)(clock() - tStart)/CLOCKS_PER_SEC;
-    std::cout<<tEnd<<"s NOT FOUND\n";
+    std::cout<<tEnd<<"s NOT FOUND "<<counter<<" \n";
     return 0;
 };
