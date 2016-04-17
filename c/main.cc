@@ -107,14 +107,20 @@ int main(int argc, char** argv){
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++)
                 	for(int l=0;l<n;l++)
-            			a_temp[j][k]+=a[j][l]*perm_m[l][k];
+                		if(a[j][l]&&perm_m[l][k]){
+            				a_temp[j][k]=1;
+            				break;
+                		}
             std::cout<<"A_temp\n";
             printMatrix(a_temp,n);
             //swap rows
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++)
                 	for(int l=0;l<n;l++)
-            			a_[j][k]+=a_temp[l][k]*perm_m[j][l];
+                		if(a_temp[l][k]&&perm_m[j][l]){
+            				a_[j][k]=1;
+            				break;
+                		}
             std::cout<<"A_\n";
             printMatrix(a_,n);
     		return 0;
