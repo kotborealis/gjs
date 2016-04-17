@@ -86,7 +86,6 @@ int main(int argc, char** argv){
             permutation[i] = tmp;
             idx[i]++;
             i = 1;
-            printPermutation(permutation,n);
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++){
                 	a_[j][k]=0;
@@ -95,14 +94,6 @@ int main(int argc, char** argv){
                     if(permutation[j]==k)
                     	perm_m[j][k]=1;
                 }
-            std::cout<<"Perm m\n";
-            printMatrix(perm_m,n);
-            
-            /**
-             * CODE GOES HERE
-             */
-             std::cout<<"A\n";
-            printMatrix(a,n);
             //swap cols
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++)
@@ -111,8 +102,6 @@ int main(int argc, char** argv){
             				a_temp[j][k]=1;
             				break;
                 		}
-            std::cout<<"A_temp\n";
-            printMatrix(a_temp,n);
             //swap rows
             for(int j=0;j<n;j++)
                 for(int k=0;k<n;k++)
@@ -121,8 +110,6 @@ int main(int argc, char** argv){
             				a_[j][k]=1;
             				break;
                 		}
-            std::cout<<"A_\n";
-            printMatrix(a_,n);
     		return 0;
         }
         else
