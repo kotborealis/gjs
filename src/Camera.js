@@ -11,14 +11,15 @@ const cameraSettings = {
         "trace_t":"#CC1205",
         "cycle":"#A1F69B",
         "bipartite1":"#FF5600",
-        "bipartite2":"#0065FF"
+        "bipartite2":"#0065FF",
     },
     bgColor:"#F2F5FC",
     edgeColor:{
         "":"#E87C7C",
         "highlight":"#94A4CC",
         "trace":"#CE44F4",
-        "cycle":"#A1F69B"
+        "cycle":"#A1F69B",
+        "spanning_tree":"#26ca8f"
     },
     edgeWidth:{
         "":4
