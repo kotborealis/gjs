@@ -93,6 +93,12 @@ this.g=g;
         return bipartite;
     };
 
+    const spanningTreeMin = function(){
+        console.log(alg.SpanningTreeMin(g));
+        alg.SpanningTreeMin(g).map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
+
+    };
+
     //util functions
     const setNodeProp = (id,prop,special)=>{
         if(id===null || id===undefined)return;
@@ -255,6 +261,7 @@ this.g=g;
     };
     this.searchMinCycle = searchMinCycle;
     this.isBipartite = isBipartite;
+    this.spanningTreeMin = spanningTreeMin;
     this.camera = camera;
     this.saveFile = ()=>{
         const data=JSON.stringify({nodes:g.nodesArray,edges:g.edgesArray});

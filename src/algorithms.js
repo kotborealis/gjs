@@ -145,3 +145,27 @@ alg.DijkstraPath = (g, source, target)=>{
         return [];
     return DijkstraTracePath(g, source, target, trace);
 };
+
+/**
+ * Build minimal spanning tree
+ * @param  g Graph
+ * @return {[]} Array of edges of spanning tree
+ */
+alg.SpanningTreeMin = g => {
+    const mst = [];
+    const sortedEdges = g.edgesArray.slice(0).sort((a,b)=>a.weight<b.weight);
+    const forest = g.nodesArray.slice(0).map(e=>e.id);
+    while(forest.length>0){
+        const edge = sortedEdges.pop();
+        const n1=forest.indexOf(edge.s);
+        const n2=forest.indexOf(edge.t);
+        if(n1!==-1 || n2!==-1){
+            mst.push(edge);
+            if(n1!==-1)
+                forest.splice(forest.indexOf(edge.s),1);
+            if(n2!==-1)
+                forest.splice(forest.indexOf(edge.t),1);
+        }
+    }
+    return mst;
+};
