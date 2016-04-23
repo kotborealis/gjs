@@ -152,20 +152,31 @@ alg.DijkstraPath = (g, source, target)=>{
  * @return {[]} Array of edges of spanning tree
  */
 alg.SpanningTreeMin = g => {
-    const mst = [];
-    const sortedEdges = g.edgesArray.slice(0).sort((a,b)=>a.weight<b.weight);
-    const forest = g.nodesArray.slice(0).map(e=>e.id);
-    while(forest.length>0){
-        const edge = sortedEdges.pop();
-        const n1=forest.indexOf(edge.s);
-        const n2=forest.indexOf(edge.t);
-        if(n1!==-1 || n2!==-1){
-            mst.push(edge);
-            if(n1!==-1)
-                forest.splice(forest.indexOf(edge.s),1);
-            if(n2!==-1)
-                forest.splice(forest.indexOf(edge.t),1);
+    //const edges = g.edgesArray.slice(0).sort((a,b)=>a.weight>b.weight);
+    const tree = [];
+    const visited = {};
+    let nodeId = g.nodesArray[0].id;
+    while(true){
+        visited[nodeId]=true;
+        let min_edge = null;
+        Object.keys(visited).map(node=>{
+            g.nodeNeighbourEdges[node].map(_=>{
+                const edge = g.edgesIndex[_];
+                if(visited[edge.s]!==true || visited[edge.t]!==true){
+                    if(min_edge===null || edge.weight<min_edge.weight)
+                        min_edge=edge;
+                }
+            });
+        });
+        if(min_edge===null)
+            break;
+        else{
+            if(visited[min_edge.s]!==true)
+                nodeId = min_edge.s;
+            else if(visited[min_edge.t]!==true)
+                nodeId = min_edge.t;
+            tree.push(min_edge);
         }
     }
-    return mst;
+    return tree;
 };

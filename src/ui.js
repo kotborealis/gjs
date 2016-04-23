@@ -4,7 +4,7 @@ window.___={};window.___.fileName="";
 const fileLoader = gui.add(window.___,'fileName');
 fileLoader.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
 
-const fileLoaderQuickSelect = gui.add(window.___,'fileName',["Basic1.json","Dijkstra1.json"]);;
+const fileLoaderQuickSelect = gui.add(window.___,'fileName',["sptree1.json","Basic1.json","Dijkstra1.json"]);;
 fileLoaderQuickSelect.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
 
 gui.add(g,'saveFile');
@@ -36,3 +36,4 @@ pathFinder.add(g,'pathFinderFunction',["BFSPath","DijkstraPath"]);
 const funcs = gui.addFolder("Functions");
 funcs.add(g,'searchMinCycle');
 funcs.add(g,'isBipartite');
+funcs.add(g,'spanningTreeMin');

@@ -94,9 +94,10 @@ this.g=g;
     };
 
     const spanningTreeMin = function(){
-        console.log(alg.SpanningTreeMin(g));
-        alg.SpanningTreeMin(g).map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
-
+        //alg.SpanningTreeMin(g).map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
+        const _ = alg.SpanningTreeMin(g);
+        _.map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
+        console.log(_);
     };
 
     //util functions
