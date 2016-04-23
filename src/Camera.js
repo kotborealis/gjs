@@ -36,6 +36,8 @@ function Camera(canvasManager,g,cfg){
 
     let zoomFactor=1;
 
+    let edgeOffset = {};
+
     const redraw = ()=>{
         startRender();
         edgeRender();
@@ -95,7 +97,26 @@ function Camera(canvasManager,g,cfg){
             ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
             ctx.beginPath();
             ctx.moveTo(g.nodesIndex[edge.s].x,g.nodesIndex[edge.s].y);
-            ctx.lineTo(g.nodesIndex[edge.t].x,g.nodesIndex[edge.t].y);
+            if(this.options.display.randomCurvedEdges===true) {
+                if (edgeOffset[edge.id] === undefined) {
+                    edgeOffset[edge.id] = Math.floor(Math.random()*this.options.display.curvesScale-this.options.display.curvesScale/2);
+                }
+                ctx.bezierCurveTo(g.nodesIndex[edge.s].x + edgeOffset[edge.id],
+                    g.nodesIndex[edge.s].y + edgeOffset[edge.id],
+                    g.nodesIndex[edge.t].x + edgeOffset[edge.id],
+                    g.nodesIndex[edge.t].y + edgeOffset[edge.id],
+                    g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
+            }
+            else if(g.nodesIndex[edge.s].x===g.nodesIndex[edge.t].x && g.nodesIndex[edge.s].y===g.nodesIndex[edge.t].y){
+                ctx.bezierCurveTo(g.nodesIndex[edge.s].x + edgeOffset[edge.id]*4,
+                    g.nodesIndex[edge.s].y + edgeOffset[edge.id]*4,
+                    g.nodesIndex[edge.s].x + edgeOffset[edge.id]*4,
+                    g.nodesIndex[edge.t].y + edgeOffset[edge.id]*4,
+                    g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
+            }
+            else{
+                ctx.lineTo(g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
+            }
             ctx.stroke();
             ctx.closePath();
             if(this.options.display.weight===true) {
@@ -104,6 +125,10 @@ function Camera(canvasManager,g,cfg){
                 edgeTextX /= 2;
                 let edgeTextY = g.nodesIndex[edge.s].y + g.nodesIndex[edge.t].y;
                 edgeTextY /= 2;
+                if(this.options.display.randomCurvedEdges===true){
+                    edgeTextX += edgeOffset[edge.id];
+                    edgeTextY += edgeOffset[edge.id];
+                }
                 ctx.fillText(edgeText, edgeTextX, edgeTextY);
             }
         });
@@ -135,4 +160,7 @@ function Camera(canvasManager,g,cfg){
     this.options.display.label=true;
     this.options.display.value=true;
     this.options.display.weight=true;
+    this.options.display.randomCurvedEdges=false;
+    this.options.display.rerandomCurves=()=>edgeOffset={};
+    this.options.display.curvesScale=50;
 }
