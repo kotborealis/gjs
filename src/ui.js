@@ -14,9 +14,6 @@ options.add(g.camera.options.display,'id');
 options.add(g.camera.options.display,'label');
 options.add(g.camera.options.display,'value');
 options.add(g.camera.options.display,'weight');
-options.add(g.camera.options.display,'randomCurvedEdges');
-options.add(g.camera.options.display,'rerandomCurves');
-options.add(g.camera.options.display,'curvesScale',-150,150);
 
 const circle_layout = gui.addFolder("Circle Layout");
 circle_layout.add(g.layout.circle,'radius',100,600);

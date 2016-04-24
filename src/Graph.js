@@ -62,18 +62,6 @@ function Graph(settings){
         return null;
     };
 
-    this.getEdgeWeight = (source,target)=>{
-        if(target===undefined)
-            return this.edgesIndex[source].weight;
-        else {
-            const edge = this.edgesIndex[this.getEdgeIdByST(source,target)];
-            if (edge === null)
-                return null;
-            else
-                return edge.weight;
-        }
-    };
-
     this.clear = ()=>{
         this.nodesArray=[];
         this.edgesArray=[];
@@ -93,7 +81,6 @@ function Graph(settings){
                 else
                     matrix[i][j] = 0;
         }
-        console.log(matrix);
         return matrix;
     };
 
@@ -142,12 +129,15 @@ function Graph(settings){
         _edge.s = edge.s;
         _edge.t = edge.t;
         _edge.weight = edge.weight || Number.POSITIVE_INFINITY;
+        _edge.directed = edge.directed || false;
 
         self.edgesArray.push(_edge);
         self.edgesIndex[_edge.id]=_edge;
 
-        self.nodeNeighbourNodes[_edge.t].push(_edge.s);
-        self.nodeNeighbourEdges[_edge.t].push(_edge.id);
+        if(!_edge.directed){
+            self.nodeNeighbourNodes[_edge.t].push(_edge.s);
+            self.nodeNeighbourEdges[_edge.t].push(_edge.id);
+        }
 
         self.nodeNeighbourNodes[_edge.s].push(_edge.t);
         self.nodeNeighbourEdges[_edge.s].push(_edge.id);

@@ -28,7 +28,7 @@ const Dijkstra = (g, source)=>{
 
         for(let i=0;i<g.nodeNeighbourNodes[node].length;i++){
             const child = g.nodeNeighbourNodes[node][i];
-            const alt = trace[node].dist + g.getEdgeWeight(node,child);
+            const alt = trace[node].dist + g.edgesIndex[g.getEdgeIdByST(node,child)].weight;
             if(alt<trace[child].dist){
                 trace[child].dist=alt;
                 trace[child].prev=node;

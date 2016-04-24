@@ -1,5 +1,4 @@
 'use strict';
-
 const cameraSettings = {
     viewport:{x:-400,y:-400},
     nodeColor:{
@@ -11,7 +10,7 @@ const cameraSettings = {
         "trace_t":"#CC1205",
         "cycle":"#A1F69B",
         "bipartite1":"#FF5600",
-        "bipartite2":"#0065FF",
+        "bipartite2":"#0065FF"
     },
     bgColor:"#F2F5FC",
     edgeColor:{
@@ -23,6 +22,11 @@ const cameraSettings = {
     },
     edgeWidth:{
         "":4
+    },
+    multipleEdgeOffset:20,
+    arrowOffset:{
+        x:10,
+        y:10
     }
 };
 
@@ -36,7 +40,7 @@ function Camera(canvasManager,g,cfg){
 
     let zoomFactor=1;
 
-    let edgeOffset = {};
+    const drawedEdgesByST={};
 
     const redraw = ()=>{
         startRender();
@@ -61,7 +65,6 @@ function Camera(canvasManager,g,cfg){
         ctx.restore();
     };
 
-
     const nodeRender = ()=>{
         g.nodesArray.map((node)=>{
             ctx.fillStyle=cfg.nodeColor.hasOwnProperty(node.prop)?cfg.nodeColor[node.prop]:cfg.nodeColor[""];
@@ -76,16 +79,14 @@ function Camera(canvasManager,g,cfg){
             ctx.fillStyle="#0c0c0c";
             if(this.options.display.label===true && node.label!=="") {
                 ctx.fillText(node.label, node.x + node.size, node.y + offset);
-                offset+=font_size;
+                offset=offset+font_size;
             }
             if(this.options.display.id===true) {
                 ctx.fillText(node.id, node.x + node.size, node.y + offset);
-                offset+=font_size;
+                offset=offset+font_size;
             }
-            if(this.options.display.value===true) {
+            if(this.options.display.value===true)
                 ctx.fillText(JSON.stringify(node.value), node.x + node.size, node.y + offset);
-                offset+=font_size;
-            }
         });
     };
 
@@ -94,44 +95,51 @@ function Camera(canvasManager,g,cfg){
         ctx.font="16px monospace";
         ctx.fillStyle="#0c0c0c";
         g.edgesArray.map((edge)=>{
-            ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
+            const offsetI = [edge.s,edge.t].sort();
+            drawedEdgesByST[offsetI]=drawedEdgesByST[offsetI]||[];
+            if(drawedEdgesByST[offsetI].indexOf(edge.id)<0)
+                drawedEdgesByST[offsetI].push(edge.id);
+            drawEdge(edge,offsetI);
+        });
+    };
+
+    const drawEdge = (edge,offsetI)=>{
+        const cOffset = drawedEdgesByST[offsetI].indexOf(edge.id);
+        const s={x:g.nodesIndex[edge.s].x,y:g.nodesIndex[edge.s].y};
+        const t={x:g.nodesIndex[edge.t].x,y:g.nodesIndex[edge.t].y};
+        const distance = Math.sqrt(Math.pow(t.x-s.x,2)+Math.pow(t.y-s.y,2));
+        const angle = Math.atan2(t.y-s.y,t.x-s.x);
+        const offset={x:distance/2,y:cOffset*cfg.multipleEdgeOffset};
+        ctx.strokeStyle=cfg.edgeColor.hasOwnProperty(edge.prop)?cfg.edgeColor[edge.prop]:cfg.edgeColor[""];
+        ctx.save();
+        ctx.translate(s.x,s.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.bezierCurveTo(offset.x,offset.y,offset.x,offset.y,distance,0);
+        ctx.stroke();
+        ctx.closePath();
+        if(edge.directed){
             ctx.beginPath();
-            ctx.moveTo(g.nodesIndex[edge.s].x,g.nodesIndex[edge.s].y);
-            if(this.options.display.randomCurvedEdges===true) {
-                if (edgeOffset[edge.id] === undefined) {
-                    edgeOffset[edge.id] = Math.floor(Math.random()*this.options.display.curvesScale-this.options.display.curvesScale/2);
-                }
-                ctx.bezierCurveTo(g.nodesIndex[edge.s].x + edgeOffset[edge.id],
-                    g.nodesIndex[edge.s].y + edgeOffset[edge.id],
-                    g.nodesIndex[edge.t].x + edgeOffset[edge.id],
-                    g.nodesIndex[edge.t].y + edgeOffset[edge.id],
-                    g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
-            }
-            else if(g.nodesIndex[edge.s].x===g.nodesIndex[edge.t].x && g.nodesIndex[edge.s].y===g.nodesIndex[edge.t].y){
-                ctx.bezierCurveTo(g.nodesIndex[edge.s].x + edgeOffset[edge.id]*4,
-                    g.nodesIndex[edge.s].y + edgeOffset[edge.id]*4,
-                    g.nodesIndex[edge.s].x + edgeOffset[edge.id]*4,
-                    g.nodesIndex[edge.t].y + edgeOffset[edge.id]*4,
-                    g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
-            }
-            else{
-                ctx.lineTo(g.nodesIndex[edge.t].x, g.nodesIndex[edge.t].y);
-            }
+            ctx.moveTo(distance-cfg.arrowOffset.x,0);
+            ctx.lineTo(distance-cfg.arrowOffset.x*2,-cfg.arrowOffset.y);
+            ctx.moveTo(distance-cfg.arrowOffset.x,0);
+            ctx.lineTo(distance-cfg.arrowOffset.x*2,cfg.arrowOffset.y);
             ctx.stroke();
             ctx.closePath();
-            if(this.options.display.weight===true) {
-                const edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
-                let edgeTextX = g.nodesIndex[edge.s].x + g.nodesIndex[edge.t].x;
-                edgeTextX /= 2;
-                let edgeTextY = g.nodesIndex[edge.s].y + g.nodesIndex[edge.t].y;
-                edgeTextY /= 2;
-                if(this.options.display.randomCurvedEdges===true){
-                    edgeTextX += edgeOffset[edge.id];
-                    edgeTextY += edgeOffset[edge.id];
-                }
-                ctx.fillText(edgeText, edgeTextX, edgeTextY);
+        }
+        if(this.options.display.weight===true) {
+            const edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
+            if(angle<-Math.PI/2 || angle>Math.PI/2) {
+                ctx.save();
+                ctx.rotate(Math.PI);
+                ctx.fillText(edgeText, -offset.x, -offset.y);
+                ctx.restore();
             }
-        });
+            else
+                ctx.fillText(edgeText, offset.x, offset.y);
+        }
+        ctx.restore();
     };
 
     const viewport = ()=>{
@@ -144,7 +152,7 @@ function Camera(canvasManager,g,cfg){
         if(dy===undefined)
             return zoomFactor;
         else
-            zoomFactor-=dy/(2000/zoomFactor);
+            zoomFactor=zoomFactor-dy/(2000/zoomFactor);
     };
 
     this.viewportCoords = (x,y)=>{
@@ -160,7 +168,4 @@ function Camera(canvasManager,g,cfg){
     this.options.display.label=true;
     this.options.display.value=true;
     this.options.display.weight=true;
-    this.options.display.randomCurvedEdges=false;
-    this.options.display.rerandomCurves=()=>edgeOffset={};
-    this.options.display.curvesScale=50;
 }
