@@ -152,7 +152,6 @@ alg.DijkstraPath = (g, source, target)=>{
  * @return {[]} Array of edges of spanning tree
  */
 alg.SpanningTreeMin = g => {
-    //const edges = g.edgesArray.slice(0).sort((a,b)=>a.weight>b.weight);
     const tree = [];
     const visited = {};
     let nodeId = g.nodesArray[0].id;
@@ -179,4 +178,23 @@ alg.SpanningTreeMin = g => {
         }
     }
     return tree;
+};
+
+/**
+ * Check if given graph have valid flow
+ * Graph *should* be directed and weighed
+ * @param g
+ */
+alg.isFlowNetwork = g => {
+    for(let i=0; i<g.nodesArray.length; i++){
+        const node = g.nodesArray[i].id;
+        let sum = 0;
+        g.nodeTargetOf[node].map(id=>{
+            console.log("adding",g.edgesIndex[id].weight);
+            sum+=g.edgesIndex[id].weight;
+        });
+        if(sum!==0)
+            return false;
+    }
+    return true;
 };

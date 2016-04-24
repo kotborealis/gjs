@@ -1,0 +1,88 @@
+//VALID FLOW
+{
+  "nodes": [
+    {
+      "label": "",
+      "size": 10,
+      "id": "NODE!!_0",
+      "value": {
+
+      },
+      "x": -150,
+      "y": 154,
+      "active": false,
+      "highlight": false,
+      "prop": ""
+    },
+    {
+      "label": "",
+      "size": 10,
+      "id": "NODE!!_1",
+      "value": {
+
+      },
+      "x": -68,
+      "y": 17,
+      "active": false,
+      "highlight": false
+    },
+    {
+      "label": "",
+      "size": 10,
+      "id": "NODE!!_2",
+      "value": {
+
+      },
+      "x": 43,
+      "y": 158,
+      "active": false,
+      "highlight": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "EDGE!!_0",
+      "s": "NODE!!_0",
+      "t": "NODE!!_1",
+      "weight": 3,
+      "directed": true
+    },
+    {
+      "id": "EDGE!!_1",
+      "s": "NODE!!_1",
+      "t": "NODE!!_0",
+      "weight": -3,
+      "directed": true
+    },
+    {
+      "id": "EDGE!!_2",
+      "s": "NODE!!_1",
+      "t": "NODE!!_2",
+      "weight": 3,
+      "directed": true,
+      "prop": ""
+    },
+    {
+      "id": "EDGE!!_3",
+      "s": "NODE!!_2",
+      "t": "NODE!!_1",
+      "weight": -3,
+      "directed": true,
+      "prop": ""
+    },
+    {
+      "id": "EDGE!!_4",
+      "s": "NODE!!_0",
+      "t": "NODE!!_2",
+      "weight": -3,
+      "directed": true
+    },
+    {
+      "id": "EDGE!!_5",
+      "s": "NODE!!_2",
+      "t": "NODE!!_0",
+      "weight": 3,
+      "directed": true
+    }
+  ]
+}
