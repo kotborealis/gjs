@@ -4,7 +4,7 @@ window.___={};window.___.fileName="";
 const fileLoader = gui.add(window.___,'fileName');
 fileLoader.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
 
-const fileLoaderQuickSelect = gui.add(window.___,'fileName',["sptree1.json","Basic1.json","Dijkstra1.json"]);;
+const fileLoaderQuickSelect = gui.add(window.___,'fileName',["flow1.json","flow2.json","sptree1.json","Basic1.json","Dijkstra1.json"]);;
 fileLoaderQuickSelect.onFinishChange((fileName)=>g.loadFromFile("tests/"+fileName));
 
 gui.add(g,'saveFile');
@@ -37,3 +37,4 @@ const funcs = gui.addFolder("Functions");
 funcs.add(g,'searchMinCycle');
 funcs.add(g,'isBipartite');
 funcs.add(g,'spanningTreeMin');
+funcs.add(g,'isFlowNetwork');

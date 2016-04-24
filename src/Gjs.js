@@ -89,7 +89,7 @@ this.g=g;
         Object.keys(trace).map((id)=>{
             setNodeProp(id,trace[id]?"bipartite1":"bipartite2",true);
         });
-        return bipartite;
+        return bipartite.bipartite;
     };
 
     const spanningTreeMin = function(){
@@ -266,8 +266,9 @@ this.g=g;
         }
     };
     this.searchMinCycle = searchMinCycle;
-    this.isBipartite = isBipartite;
+    this.isBipartite = ()=>alert(isBipartite());
     this.spanningTreeMin = spanningTreeMin;
+    this.isFlowNetwork = ()=>alert(alg.isFlowNetwork(g));
     this.camera = camera;
     this.saveFile = ()=>{
         const data=JSON.stringify({nodes:g.nodesArray,edges:g.edgesArray});
