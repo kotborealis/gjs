@@ -190,7 +190,6 @@ alg.isFlowNetwork = g => {
         const node = g.nodesArray[i].id;
         let sum = 0;
         g.nodeTargetOf[node].map(id=>{
-            console.log("adding",g.edgesIndex[id].weight);
             sum+=g.edgesIndex[id].weight;
         });
         if(sum!==0)
