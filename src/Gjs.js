@@ -269,7 +269,7 @@ module.exports = function(canvas){
         }
     };
     this.searchMinCycle = searchMinCycle;
-    this.isBipartite = ()=>alert(isBipartite());
+    this.isBipartite = ()=>alert(isBipartite().bipartite);
     this.spanningTreeMin = spanningTreeMin;
     this.isFlowNetwork = ()=>alert(alg.isFlowNetwork(g));
     this.camera = camera;
