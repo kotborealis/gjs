@@ -1,13 +1,12 @@
 "use strict";
-
-const loadJsonFromFile = function(file, callback){
+module.exports.loadJsonFromFile = (file, callback)=>{
     let path = location.pathname.split('/');
     path.pop();
-    path=path.join("/")+"/";
-    loadJSonFromURL("http://"+location.host+path+file, callback);
+    path = path.join("/") + "/";
+    module.exports.loadJSonFromURL("http://" + location.host + path + file, callback);
 };
 
-const loadJSonFromURL = function(url, callback){
+module.exports.loadJSonFromURL = (url, callback)=>{
     var _ = new XMLHttpRequest();
     _.overrideMimeType("application/json");
     _.open('GET', url, true);
@@ -19,10 +18,10 @@ const loadJSonFromURL = function(url, callback){
     _.send(null);
 };
 
-const randomString = function(l){
-    let r="";
-    while(l--){
-        r+=String.fromCharCode(((Math.random()*25)>>0)+65);
+module.exports.randomString = l=>{
+    let r = "";
+    while (l--) {
+        r += String.fromCharCode(((Math.random() * 25) >> 0) + 65);
     }
     return r;
-};
+}

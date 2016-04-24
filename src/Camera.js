@@ -1,4 +1,3 @@
-'use strict';
 const cameraSettings = {
     viewport:{x:-400,y:-400},
     nodeColor:{
@@ -32,7 +31,7 @@ const cameraSettings = {
     }
 };
 
-function Camera(canvasManager,g,cfg){
+module.exports = function (canvasManager,g,cfg){
     cfg=cfg||cameraSettings;
 
     const _slow_render = localStorage.getItem("slowRender");
@@ -171,4 +170,4 @@ function Camera(canvasManager,g,cfg){
     this.options.display.label=true;
     this.options.display.value=true;
     this.options.display.weight=true;
-}
+};

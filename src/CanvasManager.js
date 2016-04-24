@@ -1,6 +1,4 @@
-'use strict';
-
-function CanvasManager(canvas){
+module.exports = function (canvas){
     const self = this;
 
     if(typeof canvas === 'string')

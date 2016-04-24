@@ -1,10 +1,13 @@
-'use strict';
-
-function Gjs(canvas){
+module.exports = function(canvas){
+    const utils = require("./utils.js");
+    const CanvasManager = require("./CanvasManager.js");
+    const Camera = require("./Camera.js");
+    const Graph = require("./Graph.js");
+    const alg = require("./algorithms.js");
     const g = new Graph();
     const canvasManager = new CanvasManager(canvas);
     const camera = new Camera(canvasManager,g);
-this.g=g;
+    this.g=g;
     let hoverNodeId=null;
     let highlightNodeId=[];
     let highlightEdgeId=[];
@@ -18,7 +21,7 @@ this.g=g;
 
     //Graph Functions
     this.loadFromFile = (file)=>{
-        loadJsonFromFile(file,(json)=>{
+        utils.loadJsonFromFile(file,(json)=>{
             cleanAllProps();
             pathFindingNodes=[];
             dragNodeId=null;
@@ -89,7 +92,7 @@ this.g=g;
         Object.keys(trace).map((id)=>{
             setNodeProp(id,trace[id]?"bipartite1":"bipartite2",true);
         });
-        return bipartite.bipartite;
+        return bipartite;
     };
 
     const spanningTreeMin = function(){
@@ -272,9 +275,9 @@ this.g=g;
     this.camera = camera;
     this.saveFile = ()=>{
         const data=JSON.stringify({nodes:g.nodesArray,edges:g.edgesArray});
-        saveAs(new Blob([data], {type: "application/json;charset=utf-8"}),randomString(10)+".json");
+        saveAs(new Blob([data], {type: "application/json;charset=utf-8"}),utils.randomString(10)+".json");
     }
-}
+};
 
 //layout functions
 const circleLayout = function(e){
@@ -289,7 +292,7 @@ const gridLayout = function(e){
 };
 const bipartiteLayout = function(e) {
     let x=e.data.trace[e.nodeId]?0:e.data.partOffset;
-    let y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset)
+    let y=e.data.trace[e.nodeId]?((e.data.leftIndex++)*e.data.elementOffset):((e.data.rightIndex++)*e.data.elementOffset);
     if(e.data.direction==='vertical'){
         const _=x;
         x=y;

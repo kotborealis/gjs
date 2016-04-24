@@ -1,6 +1,6 @@
 'use strict';
 
-function Graph(settings){
+module.exports = function (settings){
     let _NODE_ID_GEN = 0;
     let _EDGE_ID_GEN = 0;
     settings = settings || {};

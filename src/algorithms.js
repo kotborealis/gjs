@@ -1,5 +1,8 @@
-'use strict';
 const alg={};
+const BFS = require("./algorithms/bfs.js").BFS;
+const BFSTracePath = require("./algorithms/bfs.js").BFSTracePath;
+const Dijkstra = require("./algorithms/dijkstra.js").Dijkstra;
+const DijkstraTracePath = require("./algorithms/dijkstra.js").DijkstraTracePath;
 /**
  * Find shortest path
  * @param g Graph
@@ -197,3 +200,5 @@ alg.isFlowNetwork = g => {
     }
     return true;
 };
+
+module.exports = alg;

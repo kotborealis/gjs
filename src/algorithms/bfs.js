@@ -1,5 +1,4 @@
-'use strict';
-const BFS = (g, root, onNode, onChild)=>{
+module.exports.BFS = (g, root, onNode, onChild)=>{
     onNode=onNode||function(){};
     onChild=onChild||function(){};
     const queue=[];
@@ -25,7 +24,7 @@ const BFS = (g, root, onNode, onChild)=>{
     return trace;
 };
 
-const BFSTracePath = (g, source, target, trace)=>{
+module.exports.BFSTracePath = (g, source, target, trace)=>{
     let c_node=target;
     const s_trace=[];
     s_trace.push(target);

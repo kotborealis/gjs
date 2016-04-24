@@ -1,5 +1,4 @@
-'use strict';
-const Dijkstra = (g, source)=>{
+module.exports.Dijkstra = (g, source)=>{
     const trace={};
     const node_set=[];
     const visited={};
@@ -39,7 +38,7 @@ const Dijkstra = (g, source)=>{
     return trace;
 };
 
-const DijkstraTracePath = (g, source, target, trace)=>{
+module.exports.DijkstraTracePath = (g, source, target, trace)=>{
     const s_trace = [];
     let node = target;
     s_trace.unshift(target);
