@@ -42,7 +42,6 @@ this.g=g;
         if(pathFindingNodes.length===2){
             if(pathFindingNodes[0]!==pathFindingNodes[1]) {
                 cleanAllProps();
-                console.log(this.pathFinderFunction);
                 const trace = alg[this.pathFinderFunction](g,pathFindingNodes[0], pathFindingNodes[1]);
                 for (let i = 0; i < trace.length; i++) {
                     const node = trace[i];
@@ -94,10 +93,7 @@ this.g=g;
     };
 
     const spanningTreeMin = function(){
-        //alg.SpanningTreeMin(g).map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
-        const _ = alg.SpanningTreeMin(g);
-        _.map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
-        console.log(_);
+        alg.SpanningTreeMin(g).map(edge=>setEdgeProp(edge.id,"spanning_tree",true));
     };
 
     //util functions
@@ -156,6 +152,15 @@ this.g=g;
         g.nodeNeighbourEdges[id].map((_id)=>{
             setEdgeProp(_id,"highlight");
             highlightEdgeId.push(_id);
+        });
+
+        g.nodeTargetOf[id].map(_id=>{
+            if(g.edgesIndex[_id].directed) {
+                setEdgeProp(_id, "highlight2");
+                highlightEdgeId.push(_id);
+                setNodeProp(g.edgesIndex[_id].s, "highlight2");
+                highlightNodeId.push(g.edgesIndex[_id].s);
+            }
         });
     };
 

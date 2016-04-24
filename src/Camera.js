@@ -5,6 +5,7 @@ const cameraSettings = {
         "":"#DD5A5A",
         "hover":"#4E9999",
         "highlight":"#768DCC",
+        "highlight2":"#76DDAC",
         "trace":"#CE44F4",
         "trace_s":"#5021CC",
         "trace_t":"#CC1205",
@@ -16,6 +17,7 @@ const cameraSettings = {
     edgeColor:{
         "":"#E87C7C",
         "highlight":"#94A4CC",
+        "highlight2":"#94D4AC",
         "trace":"#CE44F4",
         "cycle":"#A1F69B",
         "spanning_tree":"#26ca8f"
@@ -40,7 +42,7 @@ function Camera(canvasManager,g,cfg){
 
     let zoomFactor=1;
 
-    const drawedEdgesByST={};
+    let drawedEdgesByST={};
 
     const redraw = ()=>{
         startRender();
@@ -91,6 +93,7 @@ function Camera(canvasManager,g,cfg){
     };
 
     const edgeRender = ()=>{
+        drawedEdgesByST={};
         ctx.lineWidth=cfg.edgeWidth[""];
         ctx.font="16px monospace";
         ctx.fillStyle="#0c0c0c";
