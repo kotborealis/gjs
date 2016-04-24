@@ -1,3 +1,4 @@
+'use strict';
 const gui = new dat.GUI();
 
 window.___={};window.___.fileName="";

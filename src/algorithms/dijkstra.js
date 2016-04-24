@@ -1,3 +1,4 @@
+'use strict';
 const Dijkstra = (g, source)=>{
     const trace={};
     const node_set=[];

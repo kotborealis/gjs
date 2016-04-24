@@ -1,3 +1,4 @@
+'use strict';
 const BFS = (g, root, onNode, onChild)=>{
     onNode=onNode||function(){};
     onChild=onChild||function(){};
