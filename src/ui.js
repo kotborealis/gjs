@@ -11,6 +11,7 @@ module.exports = function(g) {
     fileLoaderQuickSelect.onFinishChange((fileName)=>g.loadFromFile("tests/" + fileName));
 
     gui.add(g, 'saveFile');
+    gui.add(g.g, 'clear');
 
     const options = gui.addFolder("Display");
     options.add(g.camera.options.display, 'id');
