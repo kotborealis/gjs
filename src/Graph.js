@@ -136,7 +136,7 @@ module.exports = function (settings){
         _edge.id = edge.id;
         _edge.s = edge.s;
         _edge.t = edge.t;
-        _edge.weight = edge.weight || Number.POSITIVE_INFINITY;
+        _edge.weight = edge.weight===undefined?Number.POSITIVE_INFINITY:edge.weight;
         _edge.directed = edge.directed || false;
 
         this.edgesArray.push(_edge);
