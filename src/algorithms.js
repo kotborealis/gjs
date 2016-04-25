@@ -195,6 +195,9 @@ alg.isFlowNetwork = g => {
         g.nodeTargetOf[node].map(id=>{
             sum+=g.edgesIndex[id].weight;
         });
+        g.nodeSourceOf[node].map(id=>{
+            sum+=g.edgesIndex[id].weight;
+        });
         if(sum!==0)
             return false;
     }
