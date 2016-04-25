@@ -198,6 +198,7 @@ alg.isFlowNetwork = g => {
         g.nodeSourceOf[node].map(id=>{
             sum+=g.edgesIndex[id].weight;
         });
+        //TODO: Fix second Kirchhoff's law
         if(sum!==0)
             return false;
     }
