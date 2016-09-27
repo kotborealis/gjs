@@ -1,169 +1,80 @@
-'use strict';
+export const Graph = function(){
+	this.nodes = new Set();
+	this.edges = new Set();
 
-module.exports = function (settings){
-    let _NODE_ID_GEN = 0;
-    let _EDGE_ID_GEN = 0;
-    settings = settings || {};
+	this.nodesIndex = new Map();
+	this.edgesIndex = new Map();
 
-    /**
-     * Arrays of nodes and edges
-     * @type {Array}
-     */
-    this.nodesArray=[];
-    this.edgesArray=[];
+	this.edgeBySourceTarget = new Map();
 
-    /**
-     * Index of nodes and edges
-     * @type {{}}
-     */
-    this.nodesIndex={};
-    this.edgesIndex={};
-
-    /**
-     * Node neighbour nodes and edges
-     */
-    this.nodeNeighbourNodes = {};
-    this.nodeNeighbourEdges = {};
-
-    /**
-     * Node's edges by targer/source
-     */
-    this.nodeTargetOf = {};
-    this.nodeSourceOf = {};
-
-    /**
-     * Add node/nodes to graph
-     * @param {Array|Object} node
-     */
-    this.addNode = node=>{
-        node = Array.isArray(node) ? node : [node];
-        node.map((i)=>__addNode(i));
-    };
-    /**
-     * Add edge/edges to graph
-     * @param {Array|Object} edge
-     */
-    this.addEdge = edge=>{
-        edge = Array.isArray(edge) ? edge : [edge];
-        edge.map((i)=>__addEdge(i));
+    this.addNode = node => {
+    	Array.isArray(node) ? node.forEach(addNodeHelper) : addNodeHelper(node);
     };
 
-    this.createNode = (x,y)=>{
-        return __addNode({id:"NODE!!_"+_NODE_ID_GEN++,x,y});
-    };
-    this.createEdge = (s,t)=>{
-        return __addEdge({id:"EDGE!!_"+_EDGE_ID_GEN++,s,t});
-    };
+    const addNodeHelper = node => {
+    	if(node.id === undefined)
+    		throw new Error(`Node must have an id`);
+    	if(this.nodesIndex.has(node.id.toString()))
+    		throw new Error(`Node with id ${node_obj.id} already exists`);
 
-    this.getEdgeIdByST = (source,target)=>{
-        for(let i=0;i<this.nodeNeighbourEdges[source].length;i++){
-            const id = this.nodeNeighbourEdges[source][i];
-            const edge = this.edgesIndex[id];
-            if(edge.s === source && edge.t === target ||
-                edge.t === source && edge.s === target)
-                return id;
-        }
-        return null;
-    };
+    	const node_obj = {
+    		id: node.id.toString(),
+    		render: {
+    			x: node.x || 0,
+    			y: node.y || 0,
+    			state: ""
+    		},
+    		meta: {
+    			targetOf: new Set(),
+    			sourceOf: new Set(),
+    			neighbourNodes: new Set(),
+    			neighbourEdges: new Set()
+    		}
+    	};
 
-    this.clear = ()=>{
-        this.nodesArray=[];
-        this.edgesArray=[];
-        this.nodesIndex={};
-        this.edgesIndex={};
-        this.nodeNeighbourNodes={};
-        this.nodeNeighbourEdges={};
-        this.nodeTargetOf = {};
-        this.nodeSourceOf = {};
+    	this.edgeBySourceTarget.set(node_obj, new Map());
+
+    	this.nodes.add(node_obj);
+    	this.nodesIndex.set(node_obj.id, node_obj);
     };
 
-    this.getAdjacencyMatrix = ()=>{
-        let matrix = [];
-        for(let i=0;i<this.nodesArray.length;i++) {
-            matrix[i]=[];
-            for(let j=0;j<this.nodesArray.length;j++)
-                if(this.nodeNeighbourNodes[this.nodesArray[i].id].includes(this.nodesArray[j].id))
-                    matrix[i][j] = 1;
-                else
-                    matrix[i][j] = 0;
-        }
-        return matrix;
+    this.addEdge = edge => {
+    	Array.isArray(edge) ? edge.forEach(addEdgeHelper) : addEdgeHelper(edge);
     };
 
-    const __addNode = node=>{
-        if(!node.id || (typeof node.id!=='string' && typeof node.id!=='number'))
-            throw new Error("Invalid node ID");
-        if(this.nodesIndex[node.id])
-            throw new Error("Node already exists");
+    const addEdgeHelper = edge => {
+    	if(edge.id === undefined)
+    		throw new Error(`Edge must have an id`);
+    	if(this.edgesIndex.has(edge.id.toString()))
+    		throw new Error(`Edge already exists`);
+    	if(edge.s === undefined  || edge.t === undefined)
+    		throw new Error(`Edge must have source and target`);
+        if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
+            throw new Error(`Edge target/source node does not exists`);
 
-        const _node={};
-        _node.label=node.label||"";
-        _node.size=node.size||10;
-        _node.id = node.id;
-        _node.value=node.value||{};
+    	const edge_obj = {
+    		id: edge.id.toString(),
+    		s: this.nodesIndex.get(edge.s.toString()),
+    		t: this.nodesIndex.get(edge.t.toString()),
+    		weight: Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight),
+    		render: {
+    			state: ""
+    		}
+    	};
 
-        _node.x = node.x||0;
-        _node.y = node.y||0;
+    	edge_obj.s.meta.sourceOf.add(edge_obj);
+    	edge_obj.t.meta.targetOf.add(edge_obj);
 
-        _node.active = false;
-        _node.highlight = false;
+    	edge_obj.s.meta.neighbourNodes.add(edge_obj.t);
+    	edge_obj.s.meta.neighbourEdges.add(edge_obj);    	
+      	
+    	this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
 
-        this.nodesArray.push(_node);
-        this.nodesIndex[_node.id]=_node;
-        this.nodeNeighbourNodes[_node.id]=[];
-        this.nodeNeighbourEdges[_node.id]=[];
-        this.nodeSourceOf[_node.id]=[];
-        this.nodeTargetOf[_node.id]=[];
-
-        return _node.id;
+      	this.edges.add(edge_obj);
+      	this.edgesIndex.set(edge_obj.id, edge_obj);
     };
 
-    const __addEdge = edge=>{
-        if(!edge.id || (typeof edge.id!=='string' && typeof edge.id!=='number'))
-            throw new Error("Invalid edge ID");
-        if(!edge.t || (typeof edge.t!=='string' && typeof edge.t!=='number'))
-            throw new Error("Invalid edge Target node");
-        if(!edge.s || (typeof edge.s!=='string' && typeof edge.s!=='number'))
-            throw new Error("Invalid edge Source node");
-        if(!this.nodesIndex[edge.s])
-            throw new Error("Edge Source node not exists");
-        if(!this.nodesIndex[edge.t])
-            throw new Error("Edge Target node not exists");
-        if(this.edgesIndex[edge.id])
-            throw new Error("Edge already exists");
-
-        const _edge = {};
-        _edge.id = edge.id;
-        _edge.s = edge.s;
-        _edge.t = edge.t;
-        _edge.weight = edge.weight===undefined?Number.POSITIVE_INFINITY:edge.weight;
-        _edge.directed = edge.directed || false;
-
-        this.edgesArray.push(_edge);
-        this.edgesIndex[_edge.id]=_edge;
-
-        if(!_edge.directed){
-            this.nodeNeighbourNodes[_edge.t].push(_edge.s);
-            this.nodeNeighbourEdges[_edge.t].push(_edge.id);
-        }
-
-        this.nodeNeighbourNodes[_edge.s].push(_edge.t);
-        this.nodeNeighbourEdges[_edge.s].push(_edge.id);
-
-        this.nodeTargetOf[_edge.t].push(_edge.id);
-        this.nodeSourceOf[_edge.s].push(_edge.id);
-
-        this.nodeNeighbourNodes[_edge.t].sort();
-        this.nodeNeighbourEdges[_edge.t].sort();
-
-        this.nodeNeighbourNodes[_edge.s].sort();
-        this.nodeNeighbourEdges[_edge.s].sort();
-
-        this.nodeTargetOf[_edge.t].sort();
-        this.nodeSourceOf[_edge.s].sort();
-
-        this.nodesArray.sort((a,b)=>a.id.localeCompare(b.id));
-
-        return _edge.id;
+    this.getEdgeBySourceTarget = (node_s, node_t) => {
+    	return this.edgeBySourceTarget.get(node_s).get(node_t);
     };
 }

@@ -1,92 +1,173 @@
-module.exports = function (canvas){
-    const self = this;
+'use strict';
+/**
+ * CanvasManager class
+ * @param canvas - Canvas element or selector
+ * @param options - Options (fullscreen,width,height,enableDrag)
+ * @constructor
+ */
+export default function(canvas,options={}){
+    if(canvas===undefined)
+        throw new Error("CanvasManager first argument must be canvas element or selector");
+    if(options===undefined)
+        options={};
 
+    /**
+     * Default options
+     */
+    options.fullscreen=options.fullscreen||false;
+    options.width=options.width||800;
+    options.height=options.height||600;
+    options.enableDrag=options.enableDrag||false;
+
+    /**
+     * Canvas initialization
+     */
     if(typeof canvas === 'string')
-        canvas = document.getElementById(canvas);
-    this.canvas = canvas;
-    this.ctx = this.canvas.getContext("2d");
+        this.e_canvas = document.querySelector(canvas);
+    else if(this.e_canvas===null) {
+        this.e_canvas = document.createElement('canvas');
+        document.body.appendChild(this.e_canvas);
+    }
+    else
+        this.e_canvas=canvas;
 
-    const _canvas={};
+    this.e_canvas.width=options.width;
+    this.e_canvas.height=options.height;
+    this.ctx = this.e_canvas.getContext("2d");
+    this.canvas={};
 
-    const _mouse={};
-    _mouse.x=0;
-    _mouse.y=0;
-    _mouse.over=false;
-    _mouse.down=false;
-    this.mouse = _mouse;
-
-    this.canvas.onmousedown=(e)=>{
-        _mouse.down=true;
-        const {x,y}=canvasCoords(e.clientX,e.clientY);
-        this.onmousedown({x,y});
+    window.onresize = ()=> {
+        if(options.fullscreen) {
+            this.e_canvas.width = window.innerWidth;
+            this.e_canvas.height = window.innerHeight;
+            this.width = this.e_canvas.width;
+            this.height = this.e_canvas.width;
+        }
+        else{
+            this.e_canvas.width=options.width;
+            this.e_canvas.height=options.height;
+            this.width = this.e_canvas.width;
+            this.height = this.e_canvas.width;
+        }
+        this.clear();
+        this.onresize();
     };
-    this.canvas.onmouseup=(e)=>{
-        _mouse.down=false;
+    this.onresize = ()=>{};
+    setTimeout(()=>window.onresize(),0);
+
+    /**
+     * Mouse Events
+     */
+    this.onmousemove=(e)=>{};
+    this.onclick=(e)=>{};
+    this.ondblclick=(e)=>{};
+    this.ondrag=(e)=>{};
+    this.onmousedown=(e)=>{};
+    this.onmouseup=(e)=>{};
+    this.onmousewheel=(e)=>{};
+    this.onmouseover=(e)=>{};
+    this.onmouseout=(e)=>{};
+
+    /**
+     * Mouse State
+     */
+    this.mouse={};
+    this.mouse.x=0;
+    this.mouse.y=0;
+    this.mouse.over=false;
+    this.mouse.down=false;
+    this.mouse.button=null;
+
+    /**
+     * Mouse Handlers
+     */
+    this.e_canvas.addEventListener('mousedown',e=>{
+        this.mouse.down=true;
+        this.mouse.button=e.button;
         const {x,y}=canvasCoords(e.clientX,e.clientY);
-        this.onmouseup({x,y});
-    };
-
-    this.canvas.onmouseover=()=>_mouse.over=true;
-    this.canvas.onmouseout=()=>_mouse.over=false;
-
-    this.canvas.onmousemove=(e)=>{
-        if(!_mouse.over)return;
-
+        this.onmousedown({button:e.button,x,y});
+    });
+    this.e_canvas.addEventListener('mouseup',e=>{
+        this.mouse.down=false;
         const {x,y}=canvasCoords(e.clientX,e.clientY);
-        const dx = (x - _mouse.x);
-        const dy = (y - _mouse.y);
-
-        if(_mouse.down)
-            self.ondrag({dx,dy,x,y});
+        this.onmouseup({button:e.button,x,y});
+    });
+    this.e_canvas.addEventListener('mouseover',()=>{
+        this.mouse.over=true;
+        this.onmouseover();
+    });
+    this.e_canvas.addEventListener('mouseout',()=>{
+        this.mouse.over=false;
+        this.onmouseout();
+    });
+    this.e_canvas.addEventListener('mousemove',e=>{
+        if(!this.mouse.over)return;
+        const {x,y}=canvasCoords(e.clientX,e.clientY);
+        const dx = (x - this.mouse.x);
+        const dy = (y - this.mouse.y);
+        if(this.mouse.down && options.enableDrag)
+            this.ondrag({button:this.mouse.button,dx,dy,x,y});
         else
-            self.onmousemove({x,y});
-
-        _mouse.x=x;
-        _mouse.y=y;
-    };
-
-    this.canvas.onclick=()=>{
-        self.onclick({x:_mouse.x,y:_mouse.y});
-    };
-
-    this.canvas.ondblclick=()=>{
-        self.ondblclick({x:_mouse.x,y:_mouse.y});
-    };
-
-    this.canvas.addEventListener('mousewheel',(e)=>self.onmousewheel(e));
-
-    const canvasCoords = (_x,_y)=>{
-        const x = _x-_canvas.box.left;
-        const y = _y-_canvas.box.top;
-        return {x,y};
-    };
-
-    const _onresize = ()=>{
-        self.canvas.width=window.innerWidth;
-        self.canvas.height=window.innerHeight;
-        _canvas.box=self.canvas.getBoundingClientRect();
-    };
-    window.onresize=_onresize;
-    _onresize();
+            this.onmousemove({x,y});
+        this.mouse.x=x;
+        this.mouse.y=y;
+    });
+    this.e_canvas.addEventListener('click',e=>{
+        this.onclick({button:e.button,x:this.mouse.x,y:this.mouse.y})
+    });
+    this.e_canvas.addEventListener('dblclick',e=>{
+        this.ondblclick({button:e.button,x:this.mouse.x,y:this.mouse.y})
+    });
+    this.e_canvas.addEventListener('mousewheel',e=>{
+        this.onmousewheel(e)
+    });
 
 
     /**
-     * Events
+     * Keyboard Events
      */
-    this.onmousemove=()=>{};
-    this.onclick=()=>{};
-    this.ondblclick=()=>{};
-    this.ondrag=()=>{};
-    this.onmousedown=()=>{};
-    this.onmouseup=()=>{};
-    this.onmousewheel=()=>{};
+    this.onkeydown = ()=>{};
+    this.onkeyup = ()=>{};
+
+    /**
+     * Keyboard State
+     */
+    this.keyboard={};
+    this.keyboard.altKey=false;
+    this.keyboard.ctrlKey=false;
+    this.keyboard.shiftKey=false;
+
+    /**
+     * Keyboard Handlers
+     */
+    window.addEventListener('keydown',e=>{
+        this.keyboard.altKey = e.altKey;
+        this.keyboard.shiftKey = e.shiftKey;
+        this.keyboard.ctrlKey = e.ctrlKey;
+        this.onkeydown({altKey:e.altKey,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,keyCode:e.keyCode});
+    });
+    window.addEventListener('keyup',e=>{
+        this.keyboard.altKey = e.altKey;
+        this.keyboard.shiftKey = e.shiftKey;
+        this.keyboard.ctrlKey = e.ctrlKey;
+        this.onkeyup({altKey:e.altKey,shiftKey:e.shiftKey,ctrlKey:e.ctrlKey,keyCode:e.keyCode});
+    });
 
     /**
      * Methods
      */
-
-    this.clear = (color)=>{
-        self.ctx.fillStyle = color;
-        self.ctx.fillRect(0,0,self.canvas.width,self.canvas.height);
+    this.clear = (color="#000000")=>{
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(0,0,this.e_canvas.width,this.e_canvas.height);
     };
+    const canvasCoords = (_x,_y)=>{
+        const x = _x-this.e_canvas.getBoundingClientRect().left;
+        const y = _y-this.e_canvas.getBoundingClientRect().top;
+        return {x,y};
+    };
+
+    Object.defineProperty(this,"fullscreen",{
+        get: ()=>options.fullscreen,
+        set: (v)=>{options.fullscreen=v;window.onresize();}
+    });
 }
