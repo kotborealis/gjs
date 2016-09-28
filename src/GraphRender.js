@@ -7,17 +7,25 @@ const config = {
 		"":{
 			color: "#ccccfc",
 			width: 4
-		}
+		},
+        "hover":{
+		    color: "#ff0000",
+            width: 4
+        }
 	},
 	node: {
 		"":{
 			color: "#acacec",
 			size: 8
-		}
+		},
+        "hover":{
+		    color: "#ff0000",
+            size: 8
+        }
 	},
 	multipleEdgesOffset: 20,
 	edgeArrow: {x: 10, y: 10}
-}
+};
 
 export const Render = function(canvasManager, graph){
 	if(!(canvasManager instanceof CanvasManager))
@@ -25,7 +33,7 @@ export const Render = function(canvasManager, graph){
 		if(!(graph instanceof Graph.Graph))
 		throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
 
-	this.config = Object.assign
+	this.config = Object.assign({}, config);
 
 	const ctx = canvasManager.ctx;
 
@@ -76,7 +84,7 @@ export const Render = function(canvasManager, graph){
 			drawedEdgesBySourceTarget.set(edge.s, new Map());
 		if(!drawedEdgesBySourceTarget.get(edge.s).has(edge.t))
 			drawedEdgesBySourceTarget.get(edge.s).set(edge.t, new Set());
-		drawedEdgesBySourceTarget.get(edge.s).get(edge.t).add(edge);	
+		drawedEdgesBySourceTarget.get(edge.s).get(edge.t).add(edge);
 
 		ctx.lineWidth = config.edge[state].width;
 		ctx.strokeStyle = ctx.fillStyle = config.edge[state].color;
@@ -144,6 +152,22 @@ export const Render = function(canvasManager, graph){
         const x = (config.viewport.x - this.viewportOffset.x) / zoomFactor;
         const y = (config.viewport.y - this.viewportOffset.y) / zoomFactor;
         return {x, y};
+    };
+
+    this.toViewport = (x,y) => {
+        const v = calculateViewport();
+        x = x/zoomFactor + v.x;
+        y = y/zoomFactor + v.y;
+        return {x,y};
+    };
+
+    this.getConfig = () => this.config;
+
+    this.zoom = dy =>{
+        if(dy === undefined)
+            return zoomFactor;
+        else
+            zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
     };
 
     render();

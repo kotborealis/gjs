@@ -46,11 +46,61 @@
 
 	"use strict";
 	
-	var Gjs = __webpack_require__(1);
-	var GUI = __webpack_require__(9);
-	var gjs = new Gjs("gcanvas");
-	gjs.loadFromFile("tests/Basic1.json");
-	GUI(gjs);
+	var _Gjs = __webpack_require__(1);
+	
+	var Gjs = _interopRequireWildcard(_Gjs);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var gjs = new Gjs.Gjs("#gcanvas");
+	
+	gjs.graph.addNode([{
+		id: 0,
+		x: 0,
+		y: 0
+	}, {
+		id: 1,
+		x: 100,
+		y: 100
+	}, {
+		id: 2,
+		x: 200,
+		y: 100
+	}, {
+		id: 3,
+		x: -200,
+		y: -300
+	}]);
+	
+	gjs.graph.addEdge([{
+		id: 0,
+		s: 0,
+		t: 1
+	}, {
+		id: 1,
+		s: 0,
+		t: 2
+	}, {
+		id: 2,
+		s: 0,
+		t: 3
+	}, {
+		id: 3,
+		s: 0,
+		t: 3
+	}, {
+		id: 4,
+		s: 0,
+		t: 3
+	}, {
+		id: 5,
+		s: 0,
+		t: 3
+	}, {
+		id: 6,
+		s: 0,
+		t: 3
+	}]);
 
 /***/ },
 /* 1 */
@@ -58,314 +108,65 @@
 
 	"use strict";
 	
-	module.exports = function (canvas) {
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Gjs = undefined;
+	
+	var _Graph = __webpack_require__(2);
+	
+	var Graph = _interopRequireWildcard(_Graph);
+	
+	var _CanvasManager = __webpack_require__(3);
+	
+	var _CanvasManager2 = _interopRequireDefault(_CanvasManager);
+	
+	var _GraphRender = __webpack_require__(4);
+	
+	var GraphRender = _interopRequireWildcard(_GraphRender);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var Gjs = exports.Gjs = function Gjs(canvas_selector) {
 	    var _this = this;
 	
-	    var utils = __webpack_require__(2);
-	    var CanvasManager = __webpack_require__(3);
-	    var Camera = __webpack_require__(4);
-	    var Graph = __webpack_require__(5);
-	    var alg = __webpack_require__(6);
-	    var g = new Graph();
-	    var canvasManager = new CanvasManager(canvas);
-	    var camera = new Camera(canvasManager, g);
-	    this.g = g;
-	    var hoverNodeId = null;
-	    var highlightNodeId = [];
-	    var highlightEdgeId = [];
-	    var dragNodeId = null;
-	    var edgeSourceNodeId = null;
-	    var pathFindingNodes = [];
+	    this.graph = new Graph.Graph();
 	
-	    var specialMarked = {};
-	    specialMarked.nodes = [];
-	    specialMarked.edges = [];
+	    var canvas = new _CanvasManager2.default(canvas_selector, { fullscreen: true });
+	    var render = new GraphRender.Render(canvas, this.graph);
 	
-	    //Graph Functions
-	    this.loadFromFile = function (file) {
-	        utils.loadJsonFromFile(file, function (json) {
-	            cleanAllProps();
-	            pathFindingNodes = [];
-	            dragNodeId = null;
-	            edgeSourceNodeId = null;
-	            hoverNodeId = null;
-	            highlightEdgeId = [];
-	            highlightNodeId = [];
-	            specialMarked.nodes = [];
-	            specialMarked.edges = [];
-	            g.clear();
-	            if (json.hasOwnProperty("nodes") && json.hasOwnProperty("edges")) {
-	                g.addNode(json.nodes);
-	                g.addEdge(json.edges);
-	            }
+	    var getNodeByCoords = function getNodeByCoords(x, y) {
+	        var node = null;
+	        var v = render.toViewport(x, y);
+	        _this.graph.nodes.forEach(function (_node) {
+	            var size = render.getConfig().node[_node.render.state].size;
+	            var c = { x: _node.render.x, y: _node.render.y };
+	            if (v.x >= c.x - size && v.x <= c.x + size && v.y >= c.y - size && v.y <= c.y + size) node = _node;
 	        });
+	        return node;
 	    };
 	
-	    var addToPathFinding = function addToPathFinding(id) {
-	        if (id === null) return;
-	        pathFindingNodes.push(id);
-	        if (pathFindingNodes.length === 2) {
-	            if (pathFindingNodes[0] !== pathFindingNodes[1]) {
-	                cleanAllProps();
-	                var trace = alg[_this.pathFinderFunction](g, pathFindingNodes[0], pathFindingNodes[1]);
-	                for (var i = 0; i < trace.length; i++) {
-	                    var node = trace[i];
-	                    setNodeProp(node, "trace", true);
-	                    if (i < trace.length - 1) {
-	                        var edge = g.getEdgeIdByST(node, trace[i + 1]);
-	                        setEdgeProp(edge, "trace", true);
-	                    }
-	                }
-	                setNodeProp(trace[0], "trace_s", true);
-	                setNodeProp(trace[trace.length - 1], "trace_t", true);
-	            }
-	            pathFindingNodes = [];
-	        } else if (pathFindingNodes.length > 2) {
-	            pathFindingNodes = [];
+	    var nodeHover = null;
+	    var onNodeHover = function onNodeHover(node) {
+	        if (node === nodeHover) {
+	            return;
 	        }
-	    };
-	
-	    var searchMinCycle = function searchMinCycle() {
-	        var traces = alg.BFSCycle(g);
-	        var min_length = Number.POSITIVE_INFINITY;
-	        var min_i = -1;
-	        for (var i = 0; i < traces.length; i++) {
-	            if (traces[i].length < min_length) {
-	                min_length = traces[i].length;
-	                min_i = i;
-	            }
+	        if (nodeHover) {
+	            nodeHover.render.state = "";
 	        }
-	        if (min_i === -1) return;
-	
-	        for (var _i = 0; _i < traces[min_i].length; _i++) {
-	            var node = traces[min_i][_i];
-	            setNodeProp(node, "cycle", true);
-	            if (_i < traces[min_i].length - 1) {
-	                var edge = g.getEdgeIdByST(node, traces[min_i][_i + 1]);
-	                setEdgeProp(edge, "cycle", true);
-	            }
-	        }
+	        nodeHover = node;
+	        if (nodeHover) nodeHover.render.state = "hover";
 	    };
 	
-	    var isBipartite = function isBipartite() {
-	        var bipartite = alg.BFSBipartite(g);
-	        var trace = bipartite.trace;
-	        Object.keys(trace).map(function (id) {
-	            setNodeProp(id, trace[id] ? "bipartite1" : "bipartite2", true);
-	        });
-	        return bipartite;
+	    canvas.onmousemove = function (e) {
+	        onNodeHover(getNodeByCoords(e.x, e.y));
 	    };
 	
-	    var spanningTreeMin = function spanningTreeMin() {
-	        alg.SpanningTreeMin(g).map(function (edge) {
-	            return setEdgeProp(edge.id, "spanning_tree", true);
-	        });
+	    canvas.onmousewheel = function (e) {
+	        render.zoom(e.deltaY);
 	    };
-	
-	    //util functions
-	    var setNodeProp = function setNodeProp(id, prop, special) {
-	        if (id === null || id === undefined) return;
-	        if (specialMarked.nodes.includes(id) && !special) return;
-	        g.nodesIndex[id].prop = prop;
-	        if (special === true) specialMarked.nodes.push(id);
-	    };
-	
-	    var setEdgeProp = function setEdgeProp(id, prop, special) {
-	        if (id === null || id === undefined) return;
-	        if (specialMarked.edges.includes(id) && !special) return;
-	        g.edgesIndex[id].prop = prop;
-	        if (special === true) specialMarked.edges.push(id);
-	    };
-	
-	    var cleanAllProps = function cleanAllProps() {
-	        specialMarked.nodes = [];
-	        specialMarked.edges = [];
-	        g.edgesArray.map(function (edge) {
-	            return edge.prop = "";
-	        });
-	        g.nodesArray.map(function (node) {
-	            return node.prop = "";
-	        });
-	    };
-	
-	    var getNodeIdByCoords = function getNodeIdByCoords(x, y) {
-	        var nodeId = null;
-	        var _ = camera.viewportCoords(x, y);
-	        g.nodesArray.map(function (node) {
-	            if (_.x >= node.x - node.size && _.x <= node.x + node.size && _.y >= node.y - node.size && _.y <= node.y + node.size) nodeId = node.id;
-	        });
-	        return nodeId;
-	    };
-	
-	    //events
-	    var onNodeHover = function onNodeHover(id) {
-	        setNodeProp(hoverNodeId, "");
-	        setNodeProp(id, "hover");
-	        hoverNodeId = id;
-	
-	        highlightNodeId.map(function (_id) {
-	            return setNodeProp(_id);
-	        });
-	        highlightNodeId = [];
-	        highlightEdgeId.map(function (_id) {
-	            return setEdgeProp(_id);
-	        });
-	        highlightEdgeId = [];
-	
-	        if (id === null) return;
-	
-	        g.nodeNeighbourNodes[id].map(function (_id) {
-	            setNodeProp(_id, "highlight");
-	            highlightNodeId.push(_id);
-	        });
-	
-	        g.nodeNeighbourEdges[id].map(function (_id) {
-	            setEdgeProp(_id, "highlight");
-	            highlightEdgeId.push(_id);
-	        });
-	
-	        g.nodeTargetOf[id].map(function (_id) {
-	            if (g.edgesIndex[_id].directed) {
-	                setEdgeProp(_id, "highlight2");
-	                highlightEdgeId.push(_id);
-	                setNodeProp(g.edgesIndex[_id].s, "highlight2");
-	                highlightNodeId.push(g.edgesIndex[_id].s);
-	            }
-	        });
-	    };
-	
-	    var onNodeDrag = function onNodeDrag(id, dx, dy) {
-	        g.nodesIndex[id].x += dx;
-	        g.nodesIndex[id].y += dy;
-	    };
-	
-	    var onViewportDrag = function onViewportDrag(dx, dy) {
-	        camera.viewportOffset.x += dx;
-	        camera.viewportOffset.y += dy;
-	    };
-	
-	    canvasManager.onmousemove = function (e) {
-	        camera.pointer = canvasManager.mouse;
-	        onNodeHover(getNodeIdByCoords(e.x, e.y));
-	    };
-	
-	    canvasManager.ondrag = function (e) {
-	        if (dragNodeId === null) onViewportDrag(e.dx, e.dy);else onNodeDrag(dragNodeId, e.dx / camera.zoom(), e.dy / camera.zoom());
-	    };
-	
-	    canvasManager.onmousedown = function (e) {
-	        dragNodeId = getNodeIdByCoords(e.x, e.y);
-	    };
-	
-	    canvasManager.onmouseup = function () {
-	        dragNodeId = null;
-	    };
-	
-	    canvasManager.onclick = function (e) {
-	        cleanAllProps();
-	        addToPathFinding(getNodeIdByCoords(e.x, e.y));
-	    };
-	
-	    canvasManager.ondblclick = function (e) {
-	        var id = getNodeIdByCoords(e.x, e.y);
-	        if (id === null) {
-	            var _ = camera.viewportCoords(e.x, e.y);
-	            var newNode = g.createNode(_.x, _.y);
-	            if (edgeSourceNodeId === null) edgeSourceNodeId = newNode;else {
-	                g.createEdge(edgeSourceNodeId, newNode);
-	                edgeSourceNodeId = null;
-	            }
-	        } else {
-	            if (edgeSourceNodeId === null) edgeSourceNodeId = id;else {
-	                g.createEdge(edgeSourceNodeId, id);
-	                edgeSourceNodeId = null;
-	            }
-	        }
-	    };
-	
-	    canvasManager.onmousewheel = function (e) {
-	        camera.zoom(e.deltaY);
-	    };
-	
-	    //Layouts
-	    this.setLayout = function (layout, data) {
-	        g.nodesArray.map(function (node, i) {
-	            var c = layout({
-	                nodeId: node.id,
-	                nodeIndex: i,
-	                nodesLength: g.nodesArray.length,
-	                data: data
-	            });
-	            node.x = c.x;
-	            node.y = c.y;
-	        });
-	    };
-	
-	    this.layout = {};
-	    this.layout.circle = {};
-	    this.layout.circle.radius = 150;
-	    this.layout.grid = {};
-	    this.layout.grid.offset = 70;
-	    this.layout.grid.row = 3;
-	    this.layout.bipartite = {};
-	    this.layout.bipartite.partOffset = 200;
-	    this.layout.bipartite.elementOffset = 70;
-	    this.layout.bipartite.direction = 'horizontal';
-	
-	    //Pathfinder
-	    this.pathFinderFunction = "BFSPath";
-	
-	    //GUI
-	    this.layoutCircle = function () {
-	        return _this.setLayout(circleLayout, _this.layout.circle);
-	    };
-	    this.layoutGrid = function () {
-	        return _this.setLayout(gridLayout, _this.layout.grid);
-	    };
-	    this.layoutBipartite = function () {
-	        var bipartite = isBipartite();
-	        if (bipartite.bipartite) {
-	            _this.layout.bipartite.leftIndex = 0;
-	            _this.layout.bipartite.rightIndex = 0;
-	            _this.layout.bipartite.trace = bipartite.trace;
-	            _this.setLayout(bipartiteLayout, _this.layout.bipartite);
-	        }
-	    };
-	    this.searchMinCycle = searchMinCycle;
-	    this.isBipartite = function () {
-	        return alert(isBipartite().bipartite);
-	    };
-	    this.spanningTreeMin = spanningTreeMin;
-	    this.isFlowNetwork = function () {
-	        return alert(alg.isFlowNetwork(g));
-	    };
-	    this.camera = camera;
-	    this.saveFile = function () {
-	        var data = JSON.stringify({ nodes: g.nodesArray, edges: g.edgesArray });
-	        saveAs(new Blob([data], { type: "application/json;charset=utf-8" }), utils.randomString(10) + ".json");
-	    };
-	};
-	
-	//layout functions
-	var circleLayout = function circleLayout(e) {
-	    var x = e.data.radius * Math.cos(e.nodeIndex * 2 * Math.PI / e.nodesLength) >> 0;
-	    var y = e.data.radius * Math.sin(e.nodeIndex * 2 * Math.PI / e.nodesLength) >> 0;
-	    return { x: x, y: y };
-	};
-	var gridLayout = function gridLayout(e) {
-	    var x = e.data.offset * (e.nodeIndex % e.data.row);
-	    var y = e.data.offset * (e.nodeIndex / e.data.row << 0);
-	    return { x: x, y: y };
-	};
-	var bipartiteLayout = function bipartiteLayout(e) {
-	    var x = e.data.trace[e.nodeId] ? 0 : e.data.partOffset;
-	    var y = e.data.trace[e.nodeId] ? e.data.leftIndex++ * e.data.elementOffset : e.data.rightIndex++ * e.data.elementOffset;
-	    if (e.data.direction === 'vertical') {
-	        var _ = x;
-	        x = y;
-	        y = _;
-	    }
-	    return { x: x, y: y };
 	};
 
 /***/ },
@@ -374,31 +175,84 @@
 
 	"use strict";
 	
-	module.exports.loadJsonFromFile = function (file, callback) {
-	    var path = location.pathname.split('/');
-	    path.pop();
-	    path = path.join("/") + "/";
-	    module.exports.loadJSonFromURL("http://" + location.host + path + file, callback);
-	};
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var Graph = exports.Graph = function Graph() {
+	    var _this = this;
 	
-	module.exports.loadJSonFromURL = function (url, callback) {
-	    var _ = new XMLHttpRequest();
-	    _.overrideMimeType("application/json");
-	    _.open('GET', url, true);
-	    _.onreadystatechange = function () {
-	        if (_.readyState == 4 && _.status == "200") {
-	            callback(JSON.parse(_.responseText));
-	        }
+	    this.nodes = new Set();
+	    this.edges = new Set();
+	
+	    this.nodesIndex = new Map();
+	    this.edgesIndex = new Map();
+	
+	    this.edgeBySourceTarget = new Map();
+	
+	    this.addNode = function (node) {
+	        Array.isArray(node) ? node.forEach(addNodeHelper) : addNodeHelper(node);
 	    };
-	    _.send(null);
-	};
 	
-	module.exports.randomString = function (l) {
-	    var r = "";
-	    while (l--) {
-	        r += String.fromCharCode((Math.random() * 25 >> 0) + 65);
-	    }
-	    return r;
+	    var addNodeHelper = function addNodeHelper(node) {
+	        if (node.id === undefined) throw new Error("Node must have an id");
+	        if (_this.nodesIndex.has(node.id.toString())) throw new Error("Node with id " + node_obj.id + " already exists");
+	
+	        var node_obj = {
+	            id: node.id.toString(),
+	            render: {
+	                x: node.x || 0,
+	                y: node.y || 0,
+	                state: ""
+	            },
+	            meta: {
+	                targetOf: new Set(),
+	                sourceOf: new Set(),
+	                neighbourNodes: new Set(),
+	                neighbourEdges: new Set()
+	            }
+	        };
+	
+	        _this.edgeBySourceTarget.set(node_obj, new Map());
+	
+	        _this.nodes.add(node_obj);
+	        _this.nodesIndex.set(node_obj.id, node_obj);
+	    };
+	
+	    this.addEdge = function (edge) {
+	        Array.isArray(edge) ? edge.forEach(addEdgeHelper) : addEdgeHelper(edge);
+	    };
+	
+	    var addEdgeHelper = function addEdgeHelper(edge) {
+	        if (edge.id === undefined) throw new Error("Edge must have an id");
+	        if (_this.edgesIndex.has(edge.id.toString())) throw new Error("Edge already exists");
+	        if (edge.s === undefined || edge.t === undefined) throw new Error("Edge must have source and target");
+	        if (!_this.nodesIndex.has(edge.s.toString()) || !_this.nodesIndex.has(edge.t.toString())) throw new Error("Edge target/source node does not exists");
+	
+	        var edge_obj = {
+	            id: edge.id.toString(),
+	            s: _this.nodesIndex.get(edge.s.toString()),
+	            t: _this.nodesIndex.get(edge.t.toString()),
+	            weight: Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight),
+	            render: {
+	                state: ""
+	            }
+	        };
+	
+	        edge_obj.s.meta.sourceOf.add(edge_obj);
+	        edge_obj.t.meta.targetOf.add(edge_obj);
+	
+	        edge_obj.s.meta.neighbourNodes.add(edge_obj.t);
+	        edge_obj.s.meta.neighbourEdges.add(edge_obj);
+	
+	        _this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
+	
+	        _this.edges.add(edge_obj);
+	        _this.edgesIndex.set(edge_obj.id, edge_obj);
+	    };
+	
+	    this.getEdgeBySourceTarget = function (node_s, node_t) {
+	        return _this.edgeBySourceTarget.get(node_s).get(node_t);
+	    };
 	};
 
 /***/ },
@@ -406,827 +260,385 @@
 /***/ function(module, exports) {
 
 	'use strict';
+	/**
+	 * CanvasManager class
+	 * @param canvas - Canvas element or selector
+	 * @param options - Options (fullscreen,width,height,enableDrag)
+	 * @constructor
+	 */
 	
-	module.exports = function (canvas) {
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	exports.default = function (canvas) {
 	    var _this = this;
 	
-	    var self = this;
+	    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 	
-	    if (typeof canvas === 'string') canvas = document.getElementById(canvas);
-	    this.canvas = canvas;
-	    this.ctx = this.canvas.getContext("2d");
+	    if (canvas === undefined) throw new Error("CanvasManager first argument must be canvas element or selector");
+	    if (options === undefined) options = {};
 	
-	    var _canvas = {};
+	    /**
+	     * Default options
+	     */
+	    options.fullscreen = options.fullscreen || false;
+	    options.width = options.width || 800;
+	    options.height = options.height || 600;
+	    options.enableDrag = options.enableDrag || false;
 	
-	    var _mouse = {};
-	    _mouse.x = 0;
-	    _mouse.y = 0;
-	    _mouse.over = false;
-	    _mouse.down = false;
-	    this.mouse = _mouse;
+	    /**
+	     * Canvas initialization
+	     */
+	    if (typeof canvas === 'string') this.e_canvas = document.querySelector(canvas);else if (this.e_canvas === null) {
+	        this.e_canvas = document.createElement('canvas');
+	        document.body.appendChild(this.e_canvas);
+	    } else this.e_canvas = canvas;
 	
-	    this.canvas.onmousedown = function (e) {
-	        _mouse.down = true;
+	    this.e_canvas.width = options.width;
+	    this.e_canvas.height = options.height;
+	    this.ctx = this.e_canvas.getContext("2d");
+	    this.canvas = {};
+	
+	    window.onresize = function () {
+	        if (options.fullscreen) {
+	            _this.e_canvas.width = window.innerWidth;
+	            _this.e_canvas.height = window.innerHeight;
+	            _this.width = _this.e_canvas.width;
+	            _this.height = _this.e_canvas.width;
+	        } else {
+	            _this.e_canvas.width = options.width;
+	            _this.e_canvas.height = options.height;
+	            _this.width = _this.e_canvas.width;
+	            _this.height = _this.e_canvas.width;
+	        }
+	        _this.clear();
+	        _this.onresize();
+	    };
+	    this.onresize = function () {};
+	    setTimeout(function () {
+	        return window.onresize();
+	    }, 0);
+	
+	    /**
+	     * Mouse Events
+	     */
+	    this.onmousemove = function (e) {};
+	    this.onclick = function (e) {};
+	    this.ondblclick = function (e) {};
+	    this.ondrag = function (e) {};
+	    this.onmousedown = function (e) {};
+	    this.onmouseup = function (e) {};
+	    this.onmousewheel = function (e) {};
+	    this.onmouseover = function (e) {};
+	    this.onmouseout = function (e) {};
+	
+	    /**
+	     * Mouse State
+	     */
+	    this.mouse = {};
+	    this.mouse.x = 0;
+	    this.mouse.y = 0;
+	    this.mouse.over = false;
+	    this.mouse.down = false;
+	    this.mouse.button = null;
+	
+	    /**
+	     * Mouse Handlers
+	     */
+	    this.e_canvas.addEventListener('mousedown', function (e) {
+	        _this.mouse.down = true;
+	        _this.mouse.button = e.button;
 	
 	        var _canvasCoords = canvasCoords(e.clientX, e.clientY);
 	
 	        var x = _canvasCoords.x;
 	        var y = _canvasCoords.y;
 	
-	        _this.onmousedown({ x: x, y: y });
-	    };
-	    this.canvas.onmouseup = function (e) {
-	        _mouse.down = false;
+	        _this.onmousedown({ button: e.button, x: x, y: y });
+	    });
+	    this.e_canvas.addEventListener('mouseup', function (e) {
+	        _this.mouse.down = false;
 	
 	        var _canvasCoords2 = canvasCoords(e.clientX, e.clientY);
 	
 	        var x = _canvasCoords2.x;
 	        var y = _canvasCoords2.y;
 	
-	        _this.onmouseup({ x: x, y: y });
-	    };
-	
-	    this.canvas.onmouseover = function () {
-	        return _mouse.over = true;
-	    };
-	    this.canvas.onmouseout = function () {
-	        return _mouse.over = false;
-	    };
-	
-	    this.canvas.onmousemove = function (e) {
-	        if (!_mouse.over) return;
+	        _this.onmouseup({ button: e.button, x: x, y: y });
+	    });
+	    this.e_canvas.addEventListener('mouseover', function () {
+	        _this.mouse.over = true;
+	        _this.onmouseover();
+	    });
+	    this.e_canvas.addEventListener('mouseout', function () {
+	        _this.mouse.over = false;
+	        _this.onmouseout();
+	    });
+	    this.e_canvas.addEventListener('mousemove', function (e) {
+	        if (!_this.mouse.over) return;
 	
 	        var _canvasCoords3 = canvasCoords(e.clientX, e.clientY);
 	
 	        var x = _canvasCoords3.x;
 	        var y = _canvasCoords3.y;
 	
-	        var dx = x - _mouse.x;
-	        var dy = y - _mouse.y;
-	
-	        if (_mouse.down) self.ondrag({ dx: dx, dy: dy, x: x, y: y });else self.onmousemove({ x: x, y: y });
-	
-	        _mouse.x = x;
-	        _mouse.y = y;
-	    };
-	
-	    this.canvas.onclick = function () {
-	        self.onclick({ x: _mouse.x, y: _mouse.y });
-	    };
-	
-	    this.canvas.ondblclick = function () {
-	        self.ondblclick({ x: _mouse.x, y: _mouse.y });
-	    };
-	
-	    this.canvas.addEventListener('mousewheel', function (e) {
-	        return self.onmousewheel(e);
+	        var dx = x - _this.mouse.x;
+	        var dy = y - _this.mouse.y;
+	        if (_this.mouse.down && options.enableDrag) _this.ondrag({ button: _this.mouse.button, dx: dx, dy: dy, x: x, y: y });else _this.onmousemove({ x: x, y: y });
+	        _this.mouse.x = x;
+	        _this.mouse.y = y;
+	    });
+	    this.e_canvas.addEventListener('click', function (e) {
+	        _this.onclick({ button: e.button, x: _this.mouse.x, y: _this.mouse.y });
+	    });
+	    this.e_canvas.addEventListener('dblclick', function (e) {
+	        _this.ondblclick({ button: e.button, x: _this.mouse.x, y: _this.mouse.y });
+	    });
+	    this.e_canvas.addEventListener('mousewheel', function (e) {
+	        _this.onmousewheel(e);
 	    });
 	
-	    var canvasCoords = function canvasCoords(_x, _y) {
-	        var x = _x - _canvas.box.left;
-	        var y = _y - _canvas.box.top;
-	        return { x: x, y: y };
-	    };
-	
-	    var _onresize = function _onresize() {
-	        self.canvas.width = window.innerWidth;
-	        self.canvas.height = window.innerHeight;
-	        _canvas.box = self.canvas.getBoundingClientRect();
-	    };
-	    window.onresize = _onresize;
-	    _onresize();
+	    /**
+	     * Keyboard Events
+	     */
+	    this.onkeydown = function () {};
+	    this.onkeyup = function () {};
 	
 	    /**
-	     * Events
+	     * Keyboard State
 	     */
-	    this.onmousemove = function () {};
-	    this.onclick = function () {};
-	    this.ondblclick = function () {};
-	    this.ondrag = function () {};
-	    this.onmousedown = function () {};
-	    this.onmouseup = function () {};
-	    this.onmousewheel = function () {};
+	    this.keyboard = {};
+	    this.keyboard.altKey = false;
+	    this.keyboard.ctrlKey = false;
+	    this.keyboard.shiftKey = false;
+	
+	    /**
+	     * Keyboard Handlers
+	     */
+	    window.addEventListener('keydown', function (e) {
+	        _this.keyboard.altKey = e.altKey;
+	        _this.keyboard.shiftKey = e.shiftKey;
+	        _this.keyboard.ctrlKey = e.ctrlKey;
+	        _this.onkeydown({ altKey: e.altKey, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, keyCode: e.keyCode });
+	    });
+	    window.addEventListener('keyup', function (e) {
+	        _this.keyboard.altKey = e.altKey;
+	        _this.keyboard.shiftKey = e.shiftKey;
+	        _this.keyboard.ctrlKey = e.ctrlKey;
+	        _this.onkeyup({ altKey: e.altKey, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, keyCode: e.keyCode });
+	    });
 	
 	    /**
 	     * Methods
 	     */
+	    this.clear = function () {
+	        var color = arguments.length <= 0 || arguments[0] === undefined ? "#000000" : arguments[0];
 	
-	    this.clear = function (color) {
-	        self.ctx.fillStyle = color;
-	        self.ctx.fillRect(0, 0, self.canvas.width, self.canvas.height);
+	        _this.ctx.fillStyle = color;
+	        _this.ctx.fillRect(0, 0, _this.e_canvas.width, _this.e_canvas.height);
 	    };
+	    var canvasCoords = function canvasCoords(_x, _y) {
+	        var x = _x - _this.e_canvas.getBoundingClientRect().left;
+	        var y = _y - _this.e_canvas.getBoundingClientRect().top;
+	        return { x: x, y: y };
+	    };
+	
+	    Object.defineProperty(this, "fullscreen", {
+	        get: function get() {
+	            return options.fullscreen;
+	        },
+	        set: function set(v) {
+	            options.fullscreen = v;window.onresize();
+	        }
+	    });
 	};
 
 /***/ },
 /* 4 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var cameraSettings = {
-	    viewport: { x: -400, y: -400 },
-	    nodeColor: {
-	        "": "#DD5A5A",
-	        "hover": "#4E9999",
-	        "highlight": "#768DCC",
-	        "highlight2": "#76DDAC",
-	        "trace": "#CE44F4",
-	        "trace_s": "#5021CC",
-	        "trace_t": "#CC1205",
-	        "cycle": "#A1F69B",
-	        "bipartite1": "#FF5600",
-	        "bipartite2": "#0065FF"
-	    },
-	    bgColor: "#F2F5FC",
-	    edgeColor: {
-	        "": "#E87C7C",
-	        "highlight": "#94A4CC",
-	        "highlight2": "#94D4AC",
-	        "trace": "#CE44F4",
-	        "cycle": "#A1F69B",
-	        "spanning_tree": "#26ca8f"
-	    },
-	    edgeWidth: {
-	        "": 4
-	    },
-	    multipleEdgeOffset: 20,
-	    arrowOffset: {
-	        x: 10,
-	        y: 10
-	    }
-	};
-	
-	module.exports = function (canvasManager, g, cfg) {
-	    var _this = this;
-	
-	    cfg = cfg || cameraSettings;
-	
-	    var _slow_render = localStorage.getItem("slowRender");
-	
-	    var ctx = canvasManager.ctx;
-	    this.viewportOffset = { x: 0, y: 0 };
-	
-	    var zoomFactor = 1;
-	
-	    var drawedEdgesByST = {};
-	
-	    var redraw = function redraw() {
-	        startRender();
-	        edgeRender();
-	        nodeRender();
-	        endRender();
-	        if (_slow_render !== null) setTimeout(function () {
-	            return requestAnimationFrame(redraw);
-	        }, _slow_render);else requestAnimationFrame(redraw);
-	    };
-	    requestAnimationFrame(redraw);
-	
-	    var startRender = function startRender() {
-	        canvasManager.clear(cfg.bgColor);
-	        ctx.save();
-	        ctx.scale(zoomFactor, zoomFactor);
-	        ctx.translate(-viewport().x, -viewport().y);
-	    };
-	
-	    var endRender = function endRender() {
-	        ctx.restore();
-	    };
-	
-	    var nodeRender = function nodeRender() {
-	        g.nodesArray.map(function (node) {
-	            ctx.fillStyle = cfg.nodeColor.hasOwnProperty(node.prop) ? cfg.nodeColor[node.prop] : cfg.nodeColor[""];
-	            ctx.beginPath();
-	            ctx.arc(node.x, node.y, node.size, 0, 2 * Math.PI, false);
-	            ctx.fill();
-	            ctx.closePath();
-	
-	            var font_size = node.size + 5;
-	            var offset = -font_size / 2;
-	            ctx.font = font_size + "px monospace";
-	            ctx.fillStyle = "#0c0c0c";
-	            if (_this.options.display.label === true && node.label !== "") {
-	                ctx.fillText(node.label, node.x + node.size, node.y + offset);
-	                offset = offset + font_size;
-	            }
-	            if (_this.options.display.id === true) {
-	                ctx.fillText(node.id, node.x + node.size, node.y + offset);
-	                offset = offset + font_size;
-	            }
-	            if (_this.options.display.value === true) ctx.fillText(JSON.stringify(node.value), node.x + node.size, node.y + offset);
-	        });
-	    };
-	
-	    var edgeRender = function edgeRender() {
-	        drawedEdgesByST = {};
-	        ctx.lineWidth = cfg.edgeWidth[""];
-	        ctx.font = "16px monospace";
-	        ctx.fillStyle = "#0c0c0c";
-	        g.edgesArray.map(function (edge) {
-	            var offsetI = [edge.s, edge.t].sort();
-	            drawedEdgesByST[offsetI] = drawedEdgesByST[offsetI] || [];
-	            if (drawedEdgesByST[offsetI].indexOf(edge.id) < 0) drawedEdgesByST[offsetI].push(edge.id);
-	            drawEdge(edge, offsetI);
-	        });
-	    };
-	
-	    var drawEdge = function drawEdge(edge, offsetI) {
-	        var cOffset = drawedEdgesByST[offsetI].indexOf(edge.id);
-	        var s = { x: g.nodesIndex[edge.s].x, y: g.nodesIndex[edge.s].y };
-	        var t = { x: g.nodesIndex[edge.t].x, y: g.nodesIndex[edge.t].y };
-	        var distance = Math.sqrt(Math.pow(t.x - s.x, 2) + Math.pow(t.y - s.y, 2));
-	        var angle = Math.atan2(t.y - s.y, t.x - s.x);
-	        var offset = { x: distance / 2, y: cOffset * cfg.multipleEdgeOffset };
-	        ctx.strokeStyle = cfg.edgeColor.hasOwnProperty(edge.prop) ? cfg.edgeColor[edge.prop] : cfg.edgeColor[""];
-	        ctx.save();
-	        ctx.translate(s.x, s.y);
-	        ctx.rotate(angle);
-	        ctx.beginPath();
-	        ctx.moveTo(0, 0);
-	        ctx.bezierCurveTo(offset.x, offset.y, offset.x, offset.y, distance, 0);
-	        ctx.stroke();
-	        ctx.closePath();
-	        if (edge.directed) {
-	            ctx.beginPath();
-	            ctx.moveTo(distance - cfg.arrowOffset.x, 0);
-	            ctx.lineTo(distance - cfg.arrowOffset.x * 2, -cfg.arrowOffset.y);
-	            ctx.moveTo(distance - cfg.arrowOffset.x, 0);
-	            ctx.lineTo(distance - cfg.arrowOffset.x * 2, cfg.arrowOffset.y);
-	            ctx.stroke();
-	            ctx.closePath();
-	        }
-	        if (_this.options.display.weight === true) {
-	            var edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
-	            if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
-	                ctx.save();
-	                ctx.rotate(Math.PI);
-	                ctx.fillText(edgeText, -offset.x, -offset.y);
-	                ctx.restore();
-	            } else ctx.fillText(edgeText, offset.x, offset.y);
-	        }
-	        ctx.restore();
-	    };
-	
-	    var viewport = function viewport() {
-	        var x = (cfg.viewport.x - _this.viewportOffset.x) / zoomFactor;
-	        var y = (cfg.viewport.y - _this.viewportOffset.y) / zoomFactor;
-	        return { x: x, y: y };
-	    };
-	
-	    this.zoom = function (dy) {
-	        if (dy === undefined) return zoomFactor;else zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
-	    };
-	
-	    this.viewportCoords = function (x, y) {
-	        x = x / zoomFactor + viewport().x;
-	        y = y / zoomFactor + viewport().y;
-	        return { x: x, y: y };
-	    };
-	
-	    //GUI vars
-	    this.options = {};
-	    this.options.display = {};
-	    this.options.display.id = true;
-	    this.options.display.label = true;
-	    this.options.display.value = true;
-	    this.options.display.weight = true;
-	};
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	module.exports = function (settings) {
-	    var _this = this;
-	
-	    var _NODE_ID_GEN = 0;
-	    var _EDGE_ID_GEN = 0;
-	    settings = settings || {};
-	
-	    /**
-	     * Arrays of nodes and edges
-	     * @type {Array}
-	     */
-	    this.nodesArray = [];
-	    this.edgesArray = [];
-	
-	    /**
-	     * Index of nodes and edges
-	     * @type {{}}
-	     */
-	    this.nodesIndex = {};
-	    this.edgesIndex = {};
-	
-	    /**
-	     * Node neighbour nodes and edges
-	     */
-	    this.nodeNeighbourNodes = {};
-	    this.nodeNeighbourEdges = {};
-	
-	    /**
-	     * Node's edges by targer/source
-	     */
-	    this.nodeTargetOf = {};
-	    this.nodeSourceOf = {};
-	
-	    /**
-	     * Add node/nodes to graph
-	     * @param {Array|Object} node
-	     */
-	    this.addNode = function (node) {
-	        node = Array.isArray(node) ? node : [node];
-	        node.map(function (i) {
-	            return __addNode(i);
-	        });
-	    };
-	    /**
-	     * Add edge/edges to graph
-	     * @param {Array|Object} edge
-	     */
-	    this.addEdge = function (edge) {
-	        edge = Array.isArray(edge) ? edge : [edge];
-	        edge.map(function (i) {
-	            return __addEdge(i);
-	        });
-	    };
-	
-	    this.createNode = function (x, y) {
-	        return __addNode({ id: "NODE!!_" + _NODE_ID_GEN++, x: x, y: y });
-	    };
-	    this.createEdge = function (s, t) {
-	        return __addEdge({ id: "EDGE!!_" + _EDGE_ID_GEN++, s: s, t: t });
-	    };
-	
-	    this.getEdgeIdByST = function (source, target) {
-	        for (var i = 0; i < _this.nodeNeighbourEdges[source].length; i++) {
-	            var id = _this.nodeNeighbourEdges[source][i];
-	            var edge = _this.edgesIndex[id];
-	            if (edge.s === source && edge.t === target || edge.t === source && edge.s === target) return id;
-	        }
-	        return null;
-	    };
-	
-	    this.clear = function () {
-	        _this.nodesArray = [];
-	        _this.edgesArray = [];
-	        _this.nodesIndex = {};
-	        _this.edgesIndex = {};
-	        _this.nodeNeighbourNodes = {};
-	        _this.nodeNeighbourEdges = {};
-	        _this.nodeTargetOf = {};
-	        _this.nodeSourceOf = {};
-	    };
-	
-	    this.getAdjacencyMatrix = function () {
-	        var matrix = [];
-	        for (var i = 0; i < _this.nodesArray.length; i++) {
-	            matrix[i] = [];
-	            for (var j = 0; j < _this.nodesArray.length; j++) {
-	                if (_this.nodeNeighbourNodes[_this.nodesArray[i].id].includes(_this.nodesArray[j].id)) matrix[i][j] = 1;else matrix[i][j] = 0;
-	            }
-	        }
-	        return matrix;
-	    };
-	
-	    var __addNode = function __addNode(node) {
-	        if (!node.id || typeof node.id !== 'string' && typeof node.id !== 'number') throw new Error("Invalid node ID");
-	        if (_this.nodesIndex[node.id]) throw new Error("Node already exists");
-	
-	        var _node = {};
-	        _node.label = node.label || "";
-	        _node.size = node.size || 10;
-	        _node.id = node.id;
-	        _node.value = node.value || {};
-	
-	        _node.x = node.x || 0;
-	        _node.y = node.y || 0;
-	
-	        _node.active = false;
-	        _node.highlight = false;
-	
-	        _this.nodesArray.push(_node);
-	        _this.nodesIndex[_node.id] = _node;
-	        _this.nodeNeighbourNodes[_node.id] = [];
-	        _this.nodeNeighbourEdges[_node.id] = [];
-	        _this.nodeSourceOf[_node.id] = [];
-	        _this.nodeTargetOf[_node.id] = [];
-	
-	        return _node.id;
-	    };
-	
-	    var __addEdge = function __addEdge(edge) {
-	        if (!edge.id || typeof edge.id !== 'string' && typeof edge.id !== 'number') throw new Error("Invalid edge ID");
-	        if (!edge.t || typeof edge.t !== 'string' && typeof edge.t !== 'number') throw new Error("Invalid edge Target node");
-	        if (!edge.s || typeof edge.s !== 'string' && typeof edge.s !== 'number') throw new Error("Invalid edge Source node");
-	        if (!_this.nodesIndex[edge.s]) throw new Error("Edge Source node not exists");
-	        if (!_this.nodesIndex[edge.t]) throw new Error("Edge Target node not exists");
-	        if (_this.edgesIndex[edge.id]) throw new Error("Edge already exists");
-	
-	        var _edge = {};
-	        _edge.id = edge.id;
-	        _edge.s = edge.s;
-	        _edge.t = edge.t;
-	        _edge.weight = edge.weight === undefined ? Number.POSITIVE_INFINITY : edge.weight;
-	        _edge.directed = edge.directed || false;
-	
-	        _this.edgesArray.push(_edge);
-	        _this.edgesIndex[_edge.id] = _edge;
-	
-	        if (!_edge.directed) {
-	            _this.nodeNeighbourNodes[_edge.t].push(_edge.s);
-	            _this.nodeNeighbourEdges[_edge.t].push(_edge.id);
-	        }
-	
-	        _this.nodeNeighbourNodes[_edge.s].push(_edge.t);
-	        _this.nodeNeighbourEdges[_edge.s].push(_edge.id);
-	
-	        _this.nodeTargetOf[_edge.t].push(_edge.id);
-	        _this.nodeSourceOf[_edge.s].push(_edge.id);
-	
-	        _this.nodeNeighbourNodes[_edge.t].sort();
-	        _this.nodeNeighbourEdges[_edge.t].sort();
-	
-	        _this.nodeNeighbourNodes[_edge.s].sort();
-	        _this.nodeNeighbourEdges[_edge.s].sort();
-	
-	        _this.nodeTargetOf[_edge.t].sort();
-	        _this.nodeSourceOf[_edge.s].sort();
-	
-	        _this.nodesArray.sort(function (a, b) {
-	            return a.id.localeCompare(b.id);
-	        });
-	
-	        return _edge.id;
-	    };
-	};
-
-/***/ },
-/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	
-	var alg = {};
-	var BFS = __webpack_require__(7).BFS;
-	var BFSTracePath = __webpack_require__(7).BFSTracePath;
-	var Dijkstra = __webpack_require__(8).Dijkstra;
-	var DijkstraTracePath = __webpack_require__(8).DijkstraTracePath;
-	/**
-	 * Find shortest path
-	 * @param g Graph
-	 * @param source Source node
-	 * @param target Target node
-	 * @returns {[]} Arrays with id's of path nodes
-	 * @constructor
-	 */
-	alg.BFSPath = function (g, source, target) {
-	    var found = false;
-	    var trace = BFS(g, source, function (e) {
-	        if (e.node === target) {
-	            found = true;
-	            return true;
-	        }
-	    });
-	    if (!trace || !found) return [];
-	    return BFSTracePath(g, source, target, trace);
-	};
-	
-	/**
-	 * Find some (~all) cycles in graph
-	 * @param g Graph
-	 * @returns {Array} Array of cycles paths
-	 * @constructor
-	 */
-	alg.BFSCycle = function (g) {
-	    var traces = [];
-	    for (var i = 0; i < g.nodesArray.length; i++) {
-	        var id = g.nodesArray[i].id;
-	        var CycleNode = null;
-	        var trace = BFS(g, id, function () {}, function (e) {
-	            if (e.trace[e.child] !== undefined && e.trace[e.child] >= e.trace[e.node]) {
-	                CycleNode = e.child;
-	                return true;
-	            }
-	        });
-	
-	        if (CycleNode === null) continue;
-	
-	        var node = CycleNode;
-	        var s_trace = [];
-	        s_trace.push(node);
-	        var backtracing = true;
-	        while (backtracing) {
-	            for (var _i = 0; _i < Object.keys(trace).length; _i++) {
-	                var _id = Object.keys(trace)[_i];
-	                if ((trace[_id] === trace[node] - 1 || trace[_id] === trace[node]) && g.getEdgeIdByST(_id, node) !== null) {
-	                    if (trace[_id] === 0) backtracing = false;
-	                    node = _id;
-	                    s_trace.push(node);
-	                    break;
-	                }
-	            }
-	        }
-	        backtracing = true;
-	        var literally_best_possible_solution = ![] + ![];
-	        while (backtracing && (literally_best_possible_solution += ![] + !![] + ![]) + ![] < ![] + g.nodesArray.length) {
-	            for (var _i2 = 0; _i2 < Object.keys(trace).length; _i2++) {
-	                var _id2 = Object.keys(trace)[_i2];
-	                if (g.getEdgeIdByST(_id2, node) !== null && (_id2 === CycleNode || trace[_id2] <= trace[CycleNode] && !s_trace.includes(_id2))) {
-	                    if (_id2 === CycleNode) backtracing = false;
-	                    node = _id2;
-	                    s_trace.push(node);
-	                    break;
-	                }
-	            }
-	        }
-	
-	        if (s_trace[0] === s_trace[s_trace.length - 1]) traces.push(s_trace);
-	    }
-	    return traces;
-	};
-	
-	/**
-	 * Determine if graph is bipartite
-	 * @param g Graph
-	 * @returns {{bipartite: boolean, trace: {}}}
-	 * @constructor
-	 */
-	alg.BFSBipartite = function (g) {
-	    var root = g.nodesArray[0].id;
-	    var trace = {};
-	    trace[root] = true;
-	    var result = { bipartite: true, trace: trace };
-	    BFS(g, root, function () {}, function (e) {
-	        if (trace[e.child] === undefined) trace[e.child] = !trace[e.node];else if (trace[e.node] === trace[e.child]) {
-	            result.bipartite = false;
-	            return true;
-	        }
-	    });
-	    return result;
-	};
-	
-	/**
-	 * Count Connected Components ig graph
-	 * @param g Graph
-	 * @returns {Number} Number of connected components
-	 * @constructor
-	 */
-	alg.BFSConnectedComponent = function (g) {
-	    var visited = [];
-	    g.nodesArray.map(function (node) {
-	        return visited[node.id] = false;
-	    });
-	    var count = 0;
-	    return alg.BFSConnectedComponentHelper(g, visited, count);
-	};
-	
-	alg.BFSConnectedComponentHelper = function (g, visited, count) {
-	    var node = null;
-	    for (var i = 0; i < Object.keys(visited).length; i++) {
-	        var id = Object.keys(visited)[i];
-	        if (visited[id] === false) {
-	            node = id;
-	            break;
-	        }
-	    }
-	    if (node === null) return count;
-	
-	    BFS(g, node, function (e) {
-	        visited[e.node] = true;return false;
-	    }, function () {});
-	    return alg.BFSConnectedComponentHelper(g, visited, ++count);
-	};
-	
-	/**
-	 * Find shortest path in weighted graph
-	 * @param g Graph
-	 * @param source Source node
-	 * @param target Target node
-	 * @returns {[]} Array with id's of path nodes
-	 * @constructor
-	 */
-	alg.DijkstraPath = function (g, source, target) {
-	    var trace = Dijkstra(g, source, target);
-	    if (!trace) return [];
-	    return DijkstraTracePath(g, source, target, trace);
-	};
-	
-	/**
-	 * Build minimal spanning tree
-	 * @param  g Graph
-	 * @return {[]} Array of edges of spanning tree
-	 */
-	alg.SpanningTreeMin = function (g) {
-	    var tree = [];
-	    var visited = {};
-	    var nodeId = g.nodesArray[0].id;
-	
-	    var _loop = function _loop() {
-	        visited[nodeId] = true;
-	        var min_edge = null;
-	        Object.keys(visited).map(function (node) {
-	            g.nodeNeighbourEdges[node].map(function (_) {
-	                var edge = g.edgesIndex[_];
-	                if (visited[edge.s] !== true || visited[edge.t] !== true) {
-	                    if (min_edge === null || edge.weight < min_edge.weight) min_edge = edge;
-	                }
-	            });
-	        });
-	        if (min_edge === null) return "break";else {
-	            if (visited[min_edge.s] !== true) nodeId = min_edge.s;else if (visited[min_edge.t] !== true) nodeId = min_edge.t;
-	            tree.push(min_edge);
-	        }
-	    };
-	
-	    while (true) {
-	        var _ret = _loop();
-	
-	        if (_ret === "break") break;
-	    }
-	    return tree;
-	};
-	
-	/**
-	 * Check if given graph have valid flow
-	 * Graph *should* be directed and weighed
-	 * @param g
-	 */
-	alg.isFlowNetwork = function (g) {
-	    for (var i = 0; i < g.nodesArray.length; i++) {
-	        var node = g.nodesArray[i].id;
-	        var sum = 0;
-	        g.nodeTargetOf[node].map(function (id) {
-	            sum += g.edgesIndex[id].weight;
-	        });
-	        g.nodeSourceOf[node].map(function (id) {
-	            sum += g.edgesIndex[id].weight;
-	        });
-	        //TODO: Fix second Kirchhoff's law
-	        if (sum !== 0) return false;
-	    }
-	    return true;
-	};
-	
-	module.exports = alg;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	module.exports.BFS = function (g, root, onNode, onChild) {
-	    onNode = onNode || function () {};
-	    onChild = onChild || function () {};
-	    var queue = [];
-	    var trace = {};
-	
-	    queue.push(root);
-	    trace[root] = 0;
-	
-	    while (queue.length) {
-	        var node = queue.shift();
-	        if (onNode({ trace: trace, node: node }) === true) return trace;
-	        for (var i = 0; i < g.nodeNeighbourNodes[node].length; i++) {
-	            var child = g.nodeNeighbourNodes[node][i];
-	            if (onChild({ trace: trace, node: node, child: child }) === true) return trace;
-	            if (trace[child] === undefined) {
-	                trace[child] = trace[node] + 1;
-	                queue.push(child);
-	            }
-	        }
-	    }
-	    return trace;
-	};
-	
-	module.exports.BFSTracePath = function (g, source, target, trace) {
-	    var c_node = target;
-	    var s_trace = [];
-	    s_trace.push(target);
-	    while (1) {
-	        if (c_node === source) break;
-	        for (var i = 0; i < g.nodeNeighbourNodes[c_node].length; i++) {
-	            var id = g.nodeNeighbourNodes[c_node][i];
-	            if (trace[id] === trace[c_node] - 1) {
-	                s_trace.push(id);
-	                c_node = id;
-	                break;
-	            }
-	        }
-	    }
-	    return s_trace.reverse();
-	};
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	module.exports.Dijkstra = function (g, source) {
-	    var trace = {};
-	    var node_set = [];
-	    var visited = {};
-	
-	    g.nodesArray.map(function (node) {
-	        node_set.push(node.id);
-	        trace[node.id] = {};
-	        trace[node.id].dist = Number.POSITIVE_INFINITY;
-	    });
-	
-	    trace[source].dist = 0;
-	    while (node_set.length > 0) {
-	        var min_dist = Number.POSITIVE_INFINITY;
-	        var min_node_i = 0;
-	        var node = null;
-	        for (var i = 0; i < Object.keys(trace).length; i++) {
-	            var id = Object.keys(trace)[i];
-	            if (trace[id].dist < min_dist && visited[id] !== true) {
-	                min_dist = trace[id].dist;
-	                node = id;
-	                min_node_i = i;
-	            }
-	        }
-	        if (node === null) break;
-	        visited[node] = true;
-	
-	        for (var _i = 0; _i < g.nodeNeighbourNodes[node].length; _i++) {
-	            var child = g.nodeNeighbourNodes[node][_i];
-	            var alt = trace[node].dist + g.edgesIndex[g.getEdgeIdByST(node, child)].weight;
-	            if (alt < trace[child].dist) {
-	                trace[child].dist = alt;
-	                trace[child].prev = node;
-	            }
-	        }
-	    }
-	    return trace;
-	};
-	
-	module.exports.DijkstraTracePath = function (g, source, target, trace) {
-	    var s_trace = [];
-	    var node = target;
-	    s_trace.unshift(target);
-	    while (trace[node].prev !== undefined) {
-	        s_trace.unshift(trace[node].prev);
-	        node = trace[node].prev;
-	    }
-	    return s_trace;
-	};
-
-/***/ },
-/* 9 */
-/***/ function(module, exports) {
-
 	'use strict';
 	
-	module.exports = function (g) {
-	    var gui = new dat.GUI();
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.Render = undefined;
 	
-	    window.___ = {};
-	    window.___.fileName = "";
-	    var fileLoader = gui.add(window.___, 'fileName');
-	    fileLoader.onFinishChange(function (fileName) {
-	        return g.loadFromFile("tests/" + fileName);
-	    });
+	var _CanvasManager = __webpack_require__(3);
 	
-	    var fileLoaderQuickSelect = gui.add(window.___, 'fileName', ["flow1.json", "flow2.json", "sptree1.json", "Basic1.json", "Dijkstra1.json"]);
-	    fileLoaderQuickSelect.onFinishChange(function (fileName) {
-	        return g.loadFromFile("tests/" + fileName);
-	    });
+	var _CanvasManager2 = _interopRequireDefault(_CanvasManager);
 	
-	    gui.add(g, 'saveFile');
-	    gui.add(g.g, 'clear');
+	var _Graph = __webpack_require__(2);
 	
-	    var options = gui.addFolder("Display");
-	    options.add(g.camera.options.display, 'id');
-	    options.add(g.camera.options.display, 'label');
-	    options.add(g.camera.options.display, 'value');
-	    options.add(g.camera.options.display, 'weight');
+	var Graph = _interopRequireWildcard(_Graph);
 	
-	    var circle_layout = gui.addFolder("Circle Layout");
-	    circle_layout.add(g.layout.circle, 'radius', 100, 600);
-	    circle_layout.add(g, 'layoutCircle');
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
-	    var grid_layout = gui.addFolder("Grid Layout");
-	    grid_layout.add(g.layout.grid, 'offset', 50, 500);
-	    grid_layout.add(g.layout.grid, 'row', 1, 10).step(1);
-	    grid_layout.add(g, 'layoutGrid');
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	    var bipartite_layout = gui.addFolder("Bipartite Layout");
-	    bipartite_layout.add(g.layout.bipartite, 'partOffset', 50, 500);
-	    bipartite_layout.add(g.layout.bipartite, 'elementOffset', 50, 500);
-	    bipartite_layout.add(g.layout.bipartite, 'direction', ['horizontal', 'vertical']);
-	    bipartite_layout.add(g, 'layoutBipartite');
+	var config = {
+		viewport: { x: -400, y: -400 },
+		edge: {
+			"": {
+				color: "#ccccfc",
+				width: 4
+			},
+			"hover": {
+				color: "#ff0000",
+				width: 4
+			}
+		},
+		node: {
+			"": {
+				color: "#acacec",
+				size: 8
+			},
+			"hover": {
+				color: "#ff0000",
+				size: 8
+			}
+		},
+		multipleEdgesOffset: 20,
+		edgeArrow: { x: 10, y: 10 }
+	};
 	
-	    var pathFinder = gui.addFolder("Path Finder");
-	    pathFinder.add(g, 'pathFinderFunction', ["BFSPath", "DijkstraPath"]);
+	var Render = exports.Render = function Render(canvasManager, graph) {
+		var _this = this;
 	
-	    var funcs = gui.addFolder("Functions");
-	    funcs.add(g, 'searchMinCycle');
-	    funcs.add(g, 'isBipartite');
-	    funcs.add(g, 'spanningTreeMin');
-	    funcs.add(g, 'isFlowNetwork');
+		if (!(canvasManager instanceof _CanvasManager2.default)) throw new Error("First argument of GraphRender.Render must be CanvasManager instance");
+		if (!(graph instanceof Graph.Graph)) throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
+	
+		this.config = Object.assign({}, config);
+	
+		var ctx = canvasManager.ctx;
+	
+		this.viewportOffset = { x: 0, y: 0 };
+	
+		var zoomFactor = 1;
+		var drawedEdgesBySourceTarget = void 0;
+	
+		var render = function render() {
+			renderStart();
+			renderEdges();
+			renderNodes();
+			renderEnd();
+	
+			requestAnimationFrame(render);
+		};
+	
+		var renderStart = function renderStart() {
+			canvasManager.clear("#3f3f3f");
+			ctx.save();
+			ctx.scale(zoomFactor, zoomFactor);
+			var v = calculateViewport();
+			ctx.translate(-v.x, -v.y);
+		};
+	
+		var renderEnd = function renderEnd() {
+			ctx.restore();
+		};
+	
+		var renderEdges = function renderEdges() {
+			drawedEdgesBySourceTarget = new Map();
+	
+			ctx.font = "16px monospace";
+	
+			graph.edges.forEach(renderEdge);
+		};
+	
+		var renderEdge = function renderEdge(edge) {
+			var state = edge.render.state;
+	
+			var desiredOffset = 0;
+	
+			if (drawedEdgesBySourceTarget.has(edge.s) && drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) desiredOffset = drawedEdgesBySourceTarget.get(edge.s).get(edge.t).size;
+	
+			if (!drawedEdgesBySourceTarget.has(edge.s)) drawedEdgesBySourceTarget.set(edge.s, new Map());
+			if (!drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) drawedEdgesBySourceTarget.get(edge.s).set(edge.t, new Set());
+			drawedEdgesBySourceTarget.get(edge.s).get(edge.t).add(edge);
+	
+			ctx.lineWidth = config.edge[state].width;
+			ctx.strokeStyle = ctx.fillStyle = config.edge[state].color;
+	
+			var s = { x: edge.s.render.x, y: edge.s.render.y };
+			var t = { x: edge.t.render.x, y: edge.t.render.y };
+	
+			var dist = Math.sqrt(Math.pow(t.x - s.x, 2) + Math.pow(t.y - s.y, 2));
+			var angle = Math.atan2(t.y - s.y, t.x - s.x);
+			var offset = {
+				x: dist / 2,
+				y: desiredOffset * config.multipleEdgesOffset
+			};
+	
+			ctx.save();
+			ctx.translate(s.x, s.y);
+			ctx.rotate(angle);
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.bezierCurveTo(offset.x, offset.y, offset.x, offset.y, dist, 0);
+			ctx.stroke();
+			ctx.closePath();
+	
+			ctx.beginPath();
+			ctx.moveTo(dist - config.edgeArrow.x, 0);
+			ctx.lineTo(dist - config.edgeArrow.x * 2, -config.edgeArrow.y);
+			ctx.moveTo(dist - config.edgeArrow.x, 0);
+			ctx.lineTo(dist - config.edgeArrow.x * 2, config.edgeArrow.y);
+			ctx.stroke();
+			ctx.closePath();
+	
+			var edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
+			if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
+				ctx.save();
+				ctx.rotate(Math.PI);
+				ctx.fillText(edgeText, -offset.x, -offset.y - 5);
+				ctx.restore();
+			} else ctx.fillText(edgeText, offset.x, offset.y - 5);
+	
+			ctx.restore();
+		};
+	
+		var renderNodes = function renderNodes() {
+			graph.nodes.forEach(renderNode);
+		};
+	
+		var renderNode = function renderNode(node) {
+			ctx.fillStyle = config.node[node.render.state].color;
+	
+			ctx.beginPath();
+			ctx.arc(node.render.x, node.render.y, config.node[node.render.state].size, 0, 2 * Math.PI, false);
+			ctx.fill();
+			ctx.closePath();
+	
+			var font_size = config.node[node.render.state].size + 5;
+			var offset = -font_size / 2;
+			ctx.font = font_size + "px monospace";
+			ctx.fillText(node.id, node.render.x + config.node[node.render.state].size, node.render.y + offset);
+		};
+	
+		var calculateViewport = function calculateViewport() {
+			var x = (config.viewport.x - _this.viewportOffset.x) / zoomFactor;
+			var y = (config.viewport.y - _this.viewportOffset.y) / zoomFactor;
+			return { x: x, y: y };
+		};
+	
+		this.toViewport = function (x, y) {
+			var v = calculateViewport();
+			x = x / zoomFactor + v.x;
+			y = y / zoomFactor + v.y;
+			return { x: x, y: y };
+		};
+	
+		this.getConfig = function () {
+			return _this.config;
+		};
+	
+		this.zoom = function (dy) {
+			if (dy === undefined) return zoomFactor;else zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
+		};
+	
+		render();
 	};
 
 /***/ }
