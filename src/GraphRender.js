@@ -13,11 +13,11 @@ const config = {
             width: 4
         },
         "out":{
-            color: "#EF6C00",
+            color: "#5C6BC0",
             width: 4
         },
         "in":{
-            color: "#F9A825",
+            color: "#42A5F5",
             width: 4
         }
 	},
@@ -27,7 +27,7 @@ const config = {
 			size: 8
 		},
         "hover":{
-		    color: "#9C27B0",
+		    color: "#FF5722",
             size: 8
         }
 	},

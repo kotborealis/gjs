@@ -20,6 +20,19 @@ export const Gjs = function(canvas_selector) {
         }
     };
 
+    const cleanHEntities = () => {
+        hEntities.nodes.hover.render = "";
+        hEntities.nodes.hover = null;
+
+        hEntities.nodes.drag.render = "";
+        hEntities.nodes.drag = null;
+
+        hEntities.edges.hover.forEach(edge => {
+            edge.render.state = "";
+        });
+        hEntities.edges.hover.clear();
+    };
+
     const getNodeByCoords = (x, y) => {
         let node = null;
         const v = render.toViewport(x, y);
@@ -82,6 +95,10 @@ export const Gjs = function(canvas_selector) {
 
     canvas.onmouseup = () => {
         hEntities.nodes.drag = null;
+    };
+
+    canvas.onclick = () => {
+        cleanHEntities();
     };
 
     canvas.ondrag = e => {

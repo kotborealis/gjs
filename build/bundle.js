@@ -155,6 +155,19 @@
 	        }
 	    };
 	
+	    var cleanHEntities = function cleanHEntities() {
+	        hEntities.nodes.hover.render = "";
+	        hEntities.nodes.hover = null;
+	
+	        hEntities.nodes.drag.render = "";
+	        hEntities.nodes.drag = null;
+	
+	        hEntities.edges.hover.forEach(function (edge) {
+	            edge.render.state = "";
+	        });
+	        hEntities.edges.hover.clear();
+	    };
+	
 	    var getNodeByCoords = function getNodeByCoords(x, y) {
 	        var node = null;
 	        var v = render.toViewport(x, y);
@@ -215,6 +228,10 @@
 	
 	    canvas.onmouseup = function () {
 	        hEntities.nodes.drag = null;
+	    };
+	
+	    canvas.onclick = function () {
+	        cleanHEntities();
 	    };
 	
 	    canvas.ondrag = function (e) {
@@ -550,11 +567,11 @@
 				width: 4
 			},
 			"out": {
-				color: "#EF6C00",
+				color: "#5C6BC0",
 				width: 4
 			},
 			"in": {
-				color: "#F9A825",
+				color: "#42A5F5",
 				width: 4
 			}
 		},
@@ -564,7 +581,7 @@
 				size: 8
 			},
 			"hover": {
-				color: "#9C27B0",
+				color: "#FF5722",
 				size: 8
 			}
 		},
