@@ -27,6 +27,21 @@ gjs.graph.addNode([
         id: 4,
         x: 200,
         y: 300
+    },
+    {
+        id: 5,
+        x: 220,
+        y: 300
+    },
+    {
+        id: 6,
+        x: 240,
+        y: 300
+    },
+    {
+        id: "аррр",
+        x: 240,
+        y: 340
     }
 ]);
 
@@ -75,9 +90,32 @@ gjs.graph.addEdge([
         id: 8,
         s: 0,
         t: 4
+    },
+    {
+        id: 9,
+        s: 4,
+        t: 5
+    },
+    {
+        id: 10,
+        s: 5,
+        t: 6
+    },
+    {
+        id: 11,
+        s: 5,
+        t: "аррр"
     }
 ]);
 
 import * as BFS from './algorithms/bfs';
 
-window.bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
+const bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
+
+for(;;){
+    const a = bfs_gen.next();
+    if(a.value.node === gjs.graph.nodesIndex.get("аррр")){
+        console.log(BFS.tracePath(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("аррр"), a.value.trace));
+        break;
+    }
+}

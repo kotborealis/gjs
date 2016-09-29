@@ -8088,7 +8088,7 @@
 /* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	var _Gjs = __webpack_require__(299);
 	
@@ -8103,66 +8103,98 @@
 	var gjs = new Gjs.Gjs("#gcanvas");
 	
 	gjs.graph.addNode([{
-		id: 0,
-		x: 0,
-		y: 0
+	    id: 0,
+	    x: 0,
+	    y: 0
 	}, {
-		id: 1,
-		x: 100,
-		y: 100
+	    id: 1,
+	    x: 100,
+	    y: 100
 	}, {
-		id: 2,
-		x: 200,
-		y: 100
+	    id: 2,
+	    x: 200,
+	    y: 100
 	}, {
-		id: 3,
-		x: -200,
-		y: -300
+	    id: 3,
+	    x: -200,
+	    y: -300
 	}, {
-		id: 4,
-		x: 200,
-		y: 300
+	    id: 4,
+	    x: 200,
+	    y: 300
+	}, {
+	    id: 5,
+	    x: 220,
+	    y: 300
+	}, {
+	    id: 6,
+	    x: 240,
+	    y: 300
+	}, {
+	    id: "аррр",
+	    x: 240,
+	    y: 340
 	}]);
 	
 	gjs.graph.addEdge([{
-		id: 0,
-		s: 0,
-		t: 1
+	    id: 0,
+	    s: 0,
+	    t: 1
 	}, {
-		id: 1,
-		s: 0,
-		t: 2
+	    id: 1,
+	    s: 0,
+	    t: 2
 	}, {
-		id: 2,
-		s: 0,
-		t: 3
+	    id: 2,
+	    s: 0,
+	    t: 3
 	}, {
-		id: 3,
-		s: 0,
-		t: 3
+	    id: 3,
+	    s: 0,
+	    t: 3
 	}, {
-		id: 4,
-		s: 0,
-		t: 3
+	    id: 4,
+	    s: 0,
+	    t: 3
 	}, {
-		id: 5,
-		s: 0,
-		t: 3
+	    id: 5,
+	    s: 0,
+	    t: 3
 	}, {
-		id: 6,
-		s: 0,
-		t: 3
+	    id: 6,
+	    s: 0,
+	    t: 3
 	}, {
-		id: 7,
-		s: 4,
-		t: 0
+	    id: 7,
+	    s: 4,
+	    t: 0
 	}, {
-		id: 8,
-		s: 0,
-		t: 4
+	    id: 8,
+	    s: 0,
+	    t: 4
+	}, {
+	    id: 9,
+	    s: 4,
+	    t: 5
+	}, {
+	    id: 10,
+	    s: 5,
+	    t: 6
+	}, {
+	    id: 11,
+	    s: 5,
+	    t: "аррр"
 	}]);
 	
-	window.bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
+	var bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
+	
+	for (;;) {
+	    var a = bfs_gen.next();
+	    if (a.value.node === gjs.graph.nodesIndex.get("аррр")) {
+	        console.log(BFS.tracePath(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("аррр"), a.value.trace));
+	        break;
+	    }
+	}
 
 /***/ },
 /* 299 */
@@ -8312,7 +8344,7 @@
 	
 	    var addNodeHelper = function addNodeHelper(node) {
 	        if (node.id === undefined) throw new Error("Node must have an id");
-	        if (_this.nodesIndex.has(node.id.toString())) throw new Error("Node with id " + node_obj.id + " already exists");
+	        if (_this.nodesIndex.has(node.id.toString())) throw new Error("Node with id " + node.id.toString() + " already exists");
 	
 	        var node_obj = {
 	            id: node.id.toString(),
@@ -8325,7 +8357,9 @@
 	                targetOf: new Set(),
 	                sourceOf: new Set(),
 	                neighbourNodes: new Set(),
-	                neighbourEdges: new Set()
+	                reverseNeighbourNodes: new Set(),
+	                neighbourEdges: new Set(),
+	                reverseNeighbourEdges: new Set()
 	            }
 	        };
 	
@@ -8360,6 +8394,9 @@
 	
 	        edge_obj.s.meta.neighbourNodes.add(edge_obj.t);
 	        edge_obj.s.meta.neighbourEdges.add(edge_obj);
+	
+	        edge_obj.t.meta.reverseNeighbourNodes.add(edge_obj.s);
+	        edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
 	
 	        _this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
 	
@@ -8792,110 +8829,130 @@
 	
 	                case 4:
 	                    if (!queue.length) {
-	                        _context.next = 38;
+	                        _context.next = 37;
 	                        break;
 	                    }
 	
 	                    node = queue.shift();
-	
-	                    console.log("got to node", node.id);
-	                    _context.next = 9;
+	                    _context.next = 8;
 	                    return { type: "node", trace: trace, node: node };
 	
-	                case 9:
+	                case 8:
 	                    _iteratorNormalCompletion = true;
 	                    _didIteratorError = false;
 	                    _iteratorError = undefined;
-	                    _context.prev = 12;
+	                    _context.prev = 11;
 	                    _iterator = node.meta.neighbourNodes[Symbol.iterator]();
 	
-	                case 14:
+	                case 13:
 	                    if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-	                        _context.next = 22;
+	                        _context.next = 21;
 	                        break;
 	                    }
 	
 	                    child = _step.value;
-	                    _context.next = 18;
+	                    _context.next = 17;
 	                    return { type: "child", trace: trace, child: child };
 	
-	                case 18:
+	                case 17:
 	                    if (!trace.has(child)) {
 	                        trace.set(child, trace.get(node) + 1);
 	                        queue.push(child);
 	                    }
 	
-	                case 19:
+	                case 18:
 	                    _iteratorNormalCompletion = true;
-	                    _context.next = 14;
+	                    _context.next = 13;
 	                    break;
 	
-	                case 22:
-	                    _context.next = 28;
+	                case 21:
+	                    _context.next = 27;
 	                    break;
 	
-	                case 24:
-	                    _context.prev = 24;
-	                    _context.t0 = _context["catch"](12);
+	                case 23:
+	                    _context.prev = 23;
+	                    _context.t0 = _context["catch"](11);
 	                    _didIteratorError = true;
 	                    _iteratorError = _context.t0;
 	
-	                case 28:
+	                case 27:
+	                    _context.prev = 27;
 	                    _context.prev = 28;
-	                    _context.prev = 29;
 	
 	                    if (!_iteratorNormalCompletion && _iterator.return) {
 	                        _iterator.return();
 	                    }
 	
-	                case 31:
-	                    _context.prev = 31;
+	                case 30:
+	                    _context.prev = 30;
 	
 	                    if (!_didIteratorError) {
-	                        _context.next = 34;
+	                        _context.next = 33;
 	                        break;
 	                    }
 	
 	                    throw _iteratorError;
 	
+	                case 33:
+	                    return _context.finish(30);
+	
 	                case 34:
-	                    return _context.finish(31);
+	                    return _context.finish(27);
 	
 	                case 35:
-	                    return _context.finish(28);
-	
-	                case 36:
 	                    _context.next = 4;
 	                    break;
 	
-	                case 38:
-	                    _context.next = 40;
+	                case 37:
+	                    _context.next = 39;
 	                    return { type: "end", trace: trace };
 	
-	                case 40:
+	                case 39:
 	                case "end":
 	                    return _context.stop();
 	            }
 	        }
-	    }, generator, this, [[12, 24, 28, 36], [29,, 31, 35]]);
+	    }, generator, this, [[11, 23, 27, 35], [28,, 30, 34]]);
 	});
 	
-	module.exports.BFSTracePath = function (g, source, target, trace) {
-	    var c_node = target;
-	    var s_trace = [];
-	    s_trace.push(target);
-	    while (1) {
-	        if (c_node === source) break;
-	        for (var i = 0; i < g.nodeNeighbourNodes[c_node].length; i++) {
-	            var id = g.nodeNeighbourNodes[c_node][i];
-	            if (trace[id] === trace[c_node] - 1) {
-	                s_trace.push(id);
-	                c_node = id;
-	                break;
+	var tracePath = exports.tracePath = function tracePath(graph, source, target, trace) {
+	    var node = target;
+	    var path = [];
+	    path.push(target);
+	
+	    for (;;) {
+	        if (node === source) break;
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+	
+	        try {
+	            for (var _iterator2 = node.meta.reverseNeighbourNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var child = _step2.value;
+	
+	                if (trace.get(child) === trace.get(node) - 1) {
+	                    path.push(child);
+	                    node = child;
+	                    break;
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                    _iterator2.return();
+	                }
+	            } finally {
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
+	                }
 	            }
 	        }
 	    }
-	    return s_trace.reverse();
+	
+	    return path.reverse();
 	};
 
 /***/ }

@@ -15,7 +15,7 @@ export const Graph = function(){
     	if(node.id === undefined)
     		throw new Error(`Node must have an id`);
     	if(this.nodesIndex.has(node.id.toString()))
-    		throw new Error(`Node with id ${node_obj.id} already exists`);
+    		throw new Error(`Node with id ${node.id.toString()} already exists`);
 
     	const node_obj = {
     		id: node.id.toString(),
@@ -28,7 +28,9 @@ export const Graph = function(){
     			targetOf: new Set(),
     			sourceOf: new Set(),
     			neighbourNodes: new Set(),
-    			neighbourEdges: new Set()
+                reverseNeighbourNodes: new Set(),
+    			neighbourEdges: new Set(),
+                reverseNeighbourEdges: new Set()
     		}
     	};
 
@@ -65,9 +67,12 @@ export const Graph = function(){
     	edge_obj.s.meta.sourceOf.add(edge_obj);
     	edge_obj.t.meta.targetOf.add(edge_obj);
 
-    	edge_obj.s.meta.neighbourNodes.add(edge_obj.t);
-    	edge_obj.s.meta.neighbourEdges.add(edge_obj);    	
-      	
+        edge_obj.s.meta.neighbourNodes.add(edge_obj.t);
+        edge_obj.s.meta.neighbourEdges.add(edge_obj);
+
+        edge_obj.t.meta.reverseNeighbourNodes.add(edge_obj.s);
+        edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
+
     	this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
 
       	this.edges.add(edge_obj);
@@ -77,4 +82,4 @@ export const Graph = function(){
     this.getEdgeBySourceTarget = (node_s, node_t) => {
     	return this.edgeBySourceTarget.get(node_s).get(node_t);
     };
-}
+};
