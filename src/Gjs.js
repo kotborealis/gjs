@@ -7,8 +7,18 @@ import * as GraphRender from './GraphRender';
 export const Gjs = function(canvas_selector) {
     this.graph = new Graph.Graph();
 
-    const canvas = new CanvasManager(canvas_selector, {fullscreen: true});
+    const canvas = new CanvasManager(canvas_selector, {fullscreen: true, enableDrag: true});
     const render = new GraphRender.Render(canvas, this.graph);
+
+    const hEntities = { //highlighted entities
+        nodes: {
+            hover: null,
+            drag: null
+        },
+        edges: {
+            hover: new Set()
+        }
+    };
 
     const getNodeByCoords = (x, y) => {
         let node = null;
@@ -22,20 +32,65 @@ export const Gjs = function(canvas_selector) {
         return node;
     };
 
-    let nodeHover = null;
     const onNodeHover = node => {
-        if(node === nodeHover) {
+        if(node === hEntities.nodes.hover) {
             return;
         }
-        if(nodeHover){
-            nodeHover.render.state = "";
+        if(hEntities.nodes.hover){
+            hEntities.nodes.hover.render.state = "";
         }
-        nodeHover = node;
-        if(nodeHover) nodeHover.render.state = "hover";
+
+        hEntities.nodes.hover = node;
+
+        if(hEntities.nodes.hover) {
+            hEntities.nodes.hover.render.state = "hover";
+
+            hEntities.nodes.hover.meta.sourceOf.forEach(edge => {
+                hEntities.edges.hover.add(edge);
+                edge.render.state = "out";
+            });
+            hEntities.nodes.hover.meta.targetOf.forEach(edge => {
+                hEntities.edges.hover.add(edge);
+                edge.render.state = "in";
+            });
+        }
+        else{
+            hEntities.edges.hover.forEach(edge => {
+                edge.render.state = "";
+            });
+            hEntities.edges.hover.clear();
+        }
     };
 
-    canvas.onmousemove = (e)=> {
+    const onNodeDrag = (node, dx, dy) => {
+        node.render.x += dx;
+        node.render.y += dy;
+    };
+
+    const onViewportDrag = (dx, dy) => {
+        render.viewportOffset.x += dx;
+        render.viewportOffset.y += dy;
+    };
+
+    canvas.onmousemove = e => {
         onNodeHover(getNodeByCoords(e.x, e.y));
+    };
+
+    canvas.onmousedown = e => {
+        hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
+    };
+
+    canvas.onmouseup = () => {
+        hEntities.nodes.drag = null;
+    };
+
+    canvas.ondrag = e => {
+        if(!hEntities.nodes.drag) {
+            onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
+        }
+        else {
+            onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
+        }
     };
 
     canvas.onmousewheel = (e)=> {

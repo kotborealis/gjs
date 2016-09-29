@@ -5,21 +5,29 @@ const config = {
 	viewport: {x: -400, y: -400},
 	edge: {
 		"":{
-			color: "#ccccfc",
+			color: "#607D8B",
 			width: 4
 		},
         "hover":{
-		    color: "#ff0000",
+		    color: "#9C27B0",
+            width: 4
+        },
+        "out":{
+            color: "#EF6C00",
+            width: 4
+        },
+        "in":{
+            color: "#F9A825",
             width: 4
         }
 	},
 	node: {
 		"":{
-			color: "#acacec",
+			color: "#607D8B",
 			size: 8
 		},
         "hover":{
-		    color: "#ff0000",
+		    color: "#9C27B0",
             size: 8
         }
 	},
@@ -52,7 +60,7 @@ export const Render = function(canvasManager, graph){
 	};
 
 	const renderStart = () => {
-		canvasManager.clear("#3f3f3f");
+		canvasManager.clear("#ECEFF1");
 		ctx.save();
 		ctx.scale(zoomFactor,zoomFactor);
 		const v = calculateViewport();

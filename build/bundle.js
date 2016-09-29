@@ -70,6 +70,10 @@
 		id: 3,
 		x: -200,
 		y: -300
+	}, {
+		id: 4,
+		x: 200,
+		y: 300
 	}]);
 	
 	gjs.graph.addEdge([{
@@ -100,6 +104,10 @@
 		id: 6,
 		s: 0,
 		t: 3
+	}, {
+		id: 7,
+		s: 4,
+		t: 0
 	}]);
 
 /***/ },
@@ -134,8 +142,18 @@
 	
 	    this.graph = new Graph.Graph();
 	
-	    var canvas = new _CanvasManager2.default(canvas_selector, { fullscreen: true });
+	    var canvas = new _CanvasManager2.default(canvas_selector, { fullscreen: true, enableDrag: true });
 	    var render = new GraphRender.Render(canvas, this.graph);
+	
+	    var hEntities = { //highlighted entities
+	        nodes: {
+	            hover: null,
+	            drag: null
+	        },
+	        edges: {
+	            hover: new Set()
+	        }
+	    };
 	
 	    var getNodeByCoords = function getNodeByCoords(x, y) {
 	        var node = null;
@@ -148,20 +166,63 @@
 	        return node;
 	    };
 	
-	    var nodeHover = null;
 	    var onNodeHover = function onNodeHover(node) {
-	        if (node === nodeHover) {
+	        if (node === hEntities.nodes.hover) {
 	            return;
 	        }
-	        if (nodeHover) {
-	            nodeHover.render.state = "";
+	        if (hEntities.nodes.hover) {
+	            hEntities.nodes.hover.render.state = "";
 	        }
-	        nodeHover = node;
-	        if (nodeHover) nodeHover.render.state = "hover";
+	
+	        hEntities.nodes.hover = node;
+	
+	        if (hEntities.nodes.hover) {
+	            hEntities.nodes.hover.render.state = "hover";
+	
+	            hEntities.nodes.hover.meta.sourceOf.forEach(function (edge) {
+	                hEntities.edges.hover.add(edge);
+	                edge.render.state = "out";
+	            });
+	            hEntities.nodes.hover.meta.targetOf.forEach(function (edge) {
+	                hEntities.edges.hover.add(edge);
+	                edge.render.state = "in";
+	            });
+	        } else {
+	            hEntities.edges.hover.forEach(function (edge) {
+	                edge.render.state = "";
+	            });
+	            hEntities.edges.hover.clear();
+	        }
+	    };
+	
+	    var onNodeDrag = function onNodeDrag(node, dx, dy) {
+	        node.render.x += dx;
+	        node.render.y += dy;
+	    };
+	
+	    var onViewportDrag = function onViewportDrag(dx, dy) {
+	        render.viewportOffset.x += dx;
+	        render.viewportOffset.y += dy;
 	    };
 	
 	    canvas.onmousemove = function (e) {
 	        onNodeHover(getNodeByCoords(e.x, e.y));
+	    };
+	
+	    canvas.onmousedown = function (e) {
+	        hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
+	    };
+	
+	    canvas.onmouseup = function () {
+	        hEntities.nodes.drag = null;
+	    };
+	
+	    canvas.ondrag = function (e) {
+	        if (!hEntities.nodes.drag) {
+	            onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
+	        } else {
+	            onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
+	        }
 	    };
 	
 	    canvas.onmousewheel = function (e) {
@@ -481,21 +542,29 @@
 		viewport: { x: -400, y: -400 },
 		edge: {
 			"": {
-				color: "#ccccfc",
+				color: "#607D8B",
 				width: 4
 			},
 			"hover": {
-				color: "#ff0000",
+				color: "#9C27B0",
+				width: 4
+			},
+			"out": {
+				color: "#EF6C00",
+				width: 4
+			},
+			"in": {
+				color: "#F9A825",
 				width: 4
 			}
 		},
 		node: {
 			"": {
-				color: "#acacec",
+				color: "#607D8B",
 				size: 8
 			},
 			"hover": {
-				color: "#ff0000",
+				color: "#9C27B0",
 				size: 8
 			}
 		},
@@ -528,7 +597,7 @@
 		};
 	
 		var renderStart = function renderStart() {
-			canvasManager.clear("#3f3f3f");
+			canvasManager.clear("#ECEFF1");
 			ctx.save();
 			ctx.scale(zoomFactor, zoomFactor);
 			var v = calculateViewport();
