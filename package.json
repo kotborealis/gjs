@@ -6,7 +6,9 @@
   "directories": {
     "test": "tests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "babel-polyfill": "^6.16.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.7.7",
     "babel-core": "^6.7.7",

@@ -70,5 +70,14 @@ gjs.graph.addEdge([
         id: 7,
         s: 4,
         t: 0
+    },
+    {
+        id: 8,
+        s: 0,
+        t: 4
     }
 ]);
+
+import * as BFS from './algorithms/bfs';
+
+window.bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
