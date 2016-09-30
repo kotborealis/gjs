@@ -106,7 +106,7 @@ export const Render = function(canvasManager, graph){
             const angle = Math.atan2(t.y - s.y, t.x - s.x);
             const offset = {
                 x: dist / 2,
-                y: ((desiredOffset / 2) >> 0) * config.multipleEdgesOffset * (desiredOffset % 2 === 0 ? 1 : -1)
+                y: Math.ceil(desiredOffset / 2) * config.multipleEdgesOffset * (desiredOffset % 2 === 0 ? 1 : -1)
             };
 
             ctx.save();
