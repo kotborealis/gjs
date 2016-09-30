@@ -4,24 +4,18 @@ import * as Dijkstra from '../src/algorithms/dijkstra';
 
 const gjs = new Gjs.Gjs();
 
-gjs.graph.addNode([{"id":"n1"},{"id":"n2"},{"id":"n3"},{"id":"n4"},{"id":"n5"},{"id":"n6"}]);
-gjs.graph.addEdge([{"id":"e1","s":"n1","t":"n2","weight":7},{"id":"e2","s":"n1","t":"n3","weight":9},
-    {"id":"e3","s":"n1","t":"n6","weight":14},{"id":"e4","s":"n3","t":"n6","weight":2},
-    {"id":"e5","s":"n3","t":"n4","weight":11},{"id":"e6","s":"n6","t":"n5","weight":9},
-    {"id":"e7","s":"n2","t":"n4","weight":15},{"id":"e8","s":"n4","t":"n5","weight":100},
-    {"id":"e9","s":"n2","t":"n3","weight":10}]);
+gjs.graph.addNode([{id:1},{id:2},{id:3},{id:4},{id:5},{id:6}]);
+gjs.graph.addEdge([{id:1,s:1,t:2,weight:7},{id:2,s:1,t:3,weight:9},
+    {id:3,s:1,t:6,weight:14},{id:4,s:3,t:6,weight:2},
+    {id:5,s:3,t:4,weight:11},{id:6,s:6,t:5,weight:9},
+    {id:7,s:2,t:4,weight:15},{id:8,s:4,t:5,weight:100},
+    {id:9,s:2,t:3,weight:10}]);
 
 describe('Dijkstra', () => {
-    it('should return shortest path', () => {
-        const gen = Dijkstra.generator(gjs.graph, gjs.graph.nodesIndex.get("n2"));
-        for(;;){
-            const value = gen.next().value;
-            if(value.type === "end"){
-                let trace = value.trace;
-                const path = Dijkstra.tracePath(gjs.graph, gjs.graph.nodesIndex.get("n2"), gjs.graph.nodesIndex.get("n5"), trace);
-                expect(path.map(node => node.id)).to.deep.equal(["n2", "n3", "n6", "n5"]);
-                break;
-            }
-        }
+    describe('shortestPath', () => {
+        it('should return shortest path', () => {
+            const path = Dijkstra.shortestPath(gjs.graph, gjs.graph.nodesIndex.get("2"), gjs.graph.nodesIndex.get("5"));
+            expect(path.map(node => node.id)).to.deep.equal([2, 3, 6, 5].map(i => i.toString()));
+        });
     });
 });

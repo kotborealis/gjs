@@ -58,3 +58,16 @@ export const tracePath = (graph, source, target, trace) => {
 
     return path.reverse();
 };
+
+export const shortestPath = (graph, source, target) => {
+    const gen = generator(graph, source, target);
+    for(;;){
+        const value = gen.next().value;
+        if(value.node === target){
+            return tracePath(graph, source, target, value.trace);
+        }
+        else if(value.type === "end"){
+            return null;
+        }
+    }
+};
