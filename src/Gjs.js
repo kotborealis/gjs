@@ -7,7 +7,8 @@ import * as GraphRender from './GraphRender';
 export const Gjs = function(canvas_selector) {
     this.graph = new Graph.Graph();
 
-    const canvas = new CanvasManager(canvas_selector, {fullscreen: true, enableDrag: true});
+    const canvas = canvas_selector ? new CanvasManager(canvas_selector, {fullscreen: true, enableDrag: true}) : null;
+
     const render = new GraphRender.Render(canvas, this.graph);
 
     const hEntities = { //highlighted entities
@@ -72,31 +73,33 @@ export const Gjs = function(canvas_selector) {
         render.viewportOffset.y += dy;
     };
 
-    canvas.onmousemove = e => {
-        onNodeHover(getNodeByCoords(e.x, e.y));
-    };
+    if(canvas) {
+        canvas.onmousemove = e => {
+            onNodeHover(getNodeByCoords(e.x, e.y));
+        };
 
-    canvas.onmousedown = e => {
-        hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
-    };
+        canvas.onmousedown = e => {
+            hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
+        };
 
-    canvas.onmouseup = () => {
-        hEntities.nodes.drag = null;
-    };
+        canvas.onmouseup = () => {
+            hEntities.nodes.drag = null;
+        };
 
-    canvas.onclick = () => {
-    };
+        canvas.onclick = () => {
+        };
 
-    canvas.ondrag = e => {
-        if(!hEntities.nodes.drag) {
-            onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
-        }
-        else {
-            onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
-        }
-    };
+        canvas.ondrag = e => {
+            if (!hEntities.nodes.drag) {
+                onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
+            }
+            else {
+                onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
+            }
+        };
 
-    canvas.onmousewheel = (e)=> {
-        render.zoom(e.deltaY);
-    };
+        canvas.onmousewheel = (e)=> {
+            render.zoom(e.deltaY);
+        };
+    }
 };

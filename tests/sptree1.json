@@ -1,8 +1,0 @@
-{"nodes":[{"label":"","size":10,"id":"n0","value":{},"x":-69.35335343932816,"y":-58.167328691049384,"active":false,"highlight":false},{"label":"","size":10,"id":"n1","value":{},"x":208.5044400583036,"y":-64.87894354001665,"active":false,"highlight":false},{"label":"","size":10,"id":"n2","value":{},"x":171.92766975623812,"y":207.72294895073006,"active":false,"highlight":false},{"label":"","size":10,"id":"n3","value":{},"x":-114.8789435400166,"y":132.77658313726258,"active":false,"highlight":false,"prop":""}],
-"edges":[
-{"id":"EDGE!!_0","s":"n2","t":"n1","weight":4,"prop":""},
-{"id":"EDGE!!_1","s":"n2","t":"n3","weight":2},
-{"id":"EDGE!!_2","s":"n0","t":"n1","weight":1,"prop":""},
-{"id":"EDGE!!_3","s":"n0","t":"n2","weight":3,"prop":""},
-{"id":"EDGE!!_4","s":"n3","t":"n0","weight":1},
-{"id":"EDGE!!_5","s":"n1","t":"n3","weight":5}]}

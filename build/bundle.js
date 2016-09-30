@@ -8228,7 +8228,8 @@
 	
 	    this.graph = new Graph.Graph();
 	
-	    var canvas = new _CanvasManager2.default(canvas_selector, { fullscreen: true, enableDrag: true });
+	    var canvas = canvas_selector ? new _CanvasManager2.default(canvas_selector, { fullscreen: true, enableDrag: true }) : null;
+	
 	    var render = new GraphRender.Render(canvas, this.graph);
 	
 	    var hEntities = { //highlighted entities
@@ -8291,31 +8292,33 @@
 	        render.viewportOffset.y += dy;
 	    };
 	
-	    canvas.onmousemove = function (e) {
-	        onNodeHover(getNodeByCoords(e.x, e.y));
-	    };
+	    if (canvas) {
+	        canvas.onmousemove = function (e) {
+	            onNodeHover(getNodeByCoords(e.x, e.y));
+	        };
 	
-	    canvas.onmousedown = function (e) {
-	        hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
-	    };
+	        canvas.onmousedown = function (e) {
+	            hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
+	        };
 	
-	    canvas.onmouseup = function () {
-	        hEntities.nodes.drag = null;
-	    };
+	        canvas.onmouseup = function () {
+	            hEntities.nodes.drag = null;
+	        };
 	
-	    canvas.onclick = function () {};
+	        canvas.onclick = function () {};
 	
-	    canvas.ondrag = function (e) {
-	        if (!hEntities.nodes.drag) {
-	            onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
-	        } else {
-	            onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
-	        }
-	    };
+	        canvas.ondrag = function (e) {
+	            if (!hEntities.nodes.drag) {
+	                onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
+	            } else {
+	                onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
+	            }
+	        };
 	
-	    canvas.onmousewheel = function (e) {
-	        render.zoom(e.deltaY);
-	    };
+	        canvas.onmousewheel = function (e) {
+	            render.zoom(e.deltaY);
+	        };
+	    }
 	};
 
 /***/ },
@@ -8615,7 +8618,7 @@
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-		value: true
+	    value: true
 	});
 	exports.Render = undefined;
 	
@@ -8632,172 +8635,178 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var config = {
-		viewport: { x: -400, y: -400 },
-		edge: {
-			"": {
-				color: "#607D8B",
-				width: 1
-			},
-			"out": {
-				color: "#5C6BC0",
-				width: 1
-			},
-			"in": {
-				color: "#42A5F5",
-				width: 1
-			}
-		},
-		node: {
-			"": {
-				color: "#607D8B",
-				size: 6
-			},
-			"hover": {
-				color: "#FF5722",
-				size: 6
-			}
-		},
-		multipleEdgesOffset: 15,
-		edgeArrow: { x: 6, y: 4 }
+	    viewport: { x: -400, y: -400 },
+	    edge: {
+	        "": {
+	            color: "#607D8B",
+	            width: 1
+	        },
+	        "out": {
+	            color: "#5C6BC0",
+	            width: 1
+	        },
+	        "in": {
+	            color: "#42A5F5",
+	            width: 1
+	        }
+	    },
+	    node: {
+	        "": {
+	            color: "#607D8B",
+	            size: 6
+	        },
+	        "hover": {
+	            color: "#FF5722",
+	            size: 6
+	        }
+	    },
+	    multipleEdgesOffset: 15,
+	    edgeArrow: { x: 6, y: 4 }
 	};
 	
 	var Render = exports.Render = function Render(canvasManager, graph) {
-		var _this = this;
+	    var _this = this;
 	
-		if (!(canvasManager instanceof _CanvasManager2.default)) throw new Error("First argument of GraphRender.Render must be CanvasManager instance");
-		if (!(graph instanceof Graph.Graph)) throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
+	    if (!(canvasManager instanceof _CanvasManager2.default) && canvasManager !== null) throw new Error("First argument of GraphRender.Render must be CanvasManager instance");
+	    if (!(graph instanceof Graph.Graph)) throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
 	
-		this.config = Object.assign({}, config);
+	    var noRender = canvasManager === null;
 	
-		var ctx = canvasManager.ctx;
+	    this.config = Object.assign({}, config);
 	
-		this.viewportOffset = { x: 0, y: 0 };
+	    if (!noRender) {
+	        (function () {
+	            var ctx = canvasManager.ctx;
 	
-		var zoomFactor = 1;
-		var drawedEdgesBySourceTarget = void 0;
+	            _this.viewportOffset = { x: 0, y: 0 };
 	
-		var render = function render() {
-			renderStart();
-			renderEdges();
-			renderNodes();
-			renderEnd();
+	            var zoomFactor = 1;
+	            var drawedEdgesBySourceTarget = void 0;
 	
-			requestAnimationFrame(render);
-		};
+	            var render = function render() {
+	                renderStart();
+	                renderEdges();
+	                renderNodes();
+	                renderEnd();
 	
-		var renderStart = function renderStart() {
-			canvasManager.clear("#ECEFF1");
-			ctx.save();
-			ctx.scale(zoomFactor, zoomFactor);
-			var v = calculateViewport();
-			ctx.translate(-v.x, -v.y);
-		};
+	                requestAnimationFrame(render);
+	            };
 	
-		var renderEnd = function renderEnd() {
-			ctx.restore();
-		};
+	            var renderStart = function renderStart() {
+	                canvasManager.clear("#ECEFF1");
+	                ctx.save();
+	                ctx.scale(zoomFactor, zoomFactor);
+	                var v = calculateViewport();
+	                ctx.translate(-v.x, -v.y);
+	            };
 	
-		var renderEdges = function renderEdges() {
-			drawedEdgesBySourceTarget = new Map();
+	            var renderEnd = function renderEnd() {
+	                ctx.restore();
+	            };
 	
-			ctx.font = "16px monospace";
+	            var renderEdges = function renderEdges() {
+	                drawedEdgesBySourceTarget = new Map();
 	
-			graph.edges.forEach(renderEdge);
-		};
+	                ctx.font = "16px monospace";
 	
-		var renderEdge = function renderEdge(edge) {
-			var state = edge.render.state;
+	                graph.edges.forEach(renderEdge);
+	            };
 	
-			var desiredOffset = 0;
+	            var renderEdge = function renderEdge(edge) {
+	                var state = edge.render.state;
 	
-			if (drawedEdgesBySourceTarget.has(edge.s) && drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) desiredOffset = drawedEdgesBySourceTarget.get(edge.s).get(edge.t).size;
-			if (drawedEdgesBySourceTarget.has(edge.t) && drawedEdgesBySourceTarget.get(edge.t).has(edge.s)) desiredOffset = drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size;
+	                var desiredOffset = 0;
 	
-			if (!drawedEdgesBySourceTarget.has(edge.s)) drawedEdgesBySourceTarget.set(edge.s, new Map());
-			if (!drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) drawedEdgesBySourceTarget.get(edge.s).set(edge.t, new Set());
-			drawedEdgesBySourceTarget.get(edge.s).get(edge.t).add(edge);
+	                if (drawedEdgesBySourceTarget.has(edge.s) && drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) desiredOffset = drawedEdgesBySourceTarget.get(edge.s).get(edge.t).size;
+	                if (drawedEdgesBySourceTarget.has(edge.t) && drawedEdgesBySourceTarget.get(edge.t).has(edge.s)) desiredOffset = drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size;
 	
-			ctx.lineWidth = config.edge[state].width;
-			ctx.strokeStyle = ctx.fillStyle = config.edge[state].color;
+	                if (!drawedEdgesBySourceTarget.has(edge.s)) drawedEdgesBySourceTarget.set(edge.s, new Map());
+	                if (!drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) drawedEdgesBySourceTarget.get(edge.s).set(edge.t, new Set());
+	                drawedEdgesBySourceTarget.get(edge.s).get(edge.t).add(edge);
 	
-			var s = { x: edge.s.render.x, y: edge.s.render.y };
-			var t = { x: edge.t.render.x, y: edge.t.render.y };
+	                ctx.lineWidth = config.edge[state].width;
+	                ctx.strokeStyle = ctx.fillStyle = config.edge[state].color;
 	
-			var dist = Math.sqrt(Math.pow(t.x - s.x, 2) + Math.pow(t.y - s.y, 2));
-			var angle = Math.atan2(t.y - s.y, t.x - s.x);
-			var offset = {
-				x: dist / 2,
-				y: (desiredOffset / 2 >> 0) * config.multipleEdgesOffset * (desiredOffset % 2 === 0 ? 1 : -1)
-			};
+	                var s = { x: edge.s.render.x, y: edge.s.render.y };
+	                var t = { x: edge.t.render.x, y: edge.t.render.y };
 	
-			ctx.save();
-			ctx.translate(s.x, s.y);
-			ctx.rotate(angle);
-			ctx.beginPath();
-			ctx.moveTo(0, 0);
-			ctx.bezierCurveTo(offset.x, offset.y, offset.x, offset.y, dist, 0);
-			ctx.stroke();
-			ctx.closePath();
+	                var dist = Math.sqrt(Math.pow(t.x - s.x, 2) + Math.pow(t.y - s.y, 2));
+	                var angle = Math.atan2(t.y - s.y, t.x - s.x);
+	                var offset = {
+	                    x: dist / 2,
+	                    y: (desiredOffset / 2 >> 0) * config.multipleEdgesOffset * (desiredOffset % 2 === 0 ? 1 : -1)
+	                };
 	
-			ctx.beginPath();
-			ctx.moveTo(dist - config.edgeArrow.x, 0);
-			ctx.lineTo(dist - config.edgeArrow.x * 2, -config.edgeArrow.y);
-			ctx.moveTo(dist - config.edgeArrow.x, 0);
-			ctx.lineTo(dist - config.edgeArrow.x * 2, config.edgeArrow.y);
-			ctx.stroke();
-			ctx.closePath();
+	                ctx.save();
+	                ctx.translate(s.x, s.y);
+	                ctx.rotate(angle);
+	                ctx.beginPath();
+	                ctx.moveTo(0, 0);
+	                ctx.bezierCurveTo(offset.x, offset.y, offset.x, offset.y, dist, 0);
+	                ctx.stroke();
+	                ctx.closePath();
 	
-			var edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
-			if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
-				ctx.save();
-				ctx.rotate(Math.PI);
-				ctx.fillText(edgeText, -offset.x, -offset.y - 5);
-				ctx.restore();
-			} else ctx.fillText(edgeText, offset.x, offset.y - 5);
+	                ctx.beginPath();
+	                ctx.moveTo(dist - config.edgeArrow.x, 0);
+	                ctx.lineTo(dist - config.edgeArrow.x * 2, -config.edgeArrow.y);
+	                ctx.moveTo(dist - config.edgeArrow.x, 0);
+	                ctx.lineTo(dist - config.edgeArrow.x * 2, config.edgeArrow.y);
+	                ctx.stroke();
+	                ctx.closePath();
 	
-			ctx.restore();
-		};
+	                var edgeText = edge.weight === Number.POSITIVE_INFINITY ? "inf" : edge.weight;
+	                if (angle < -Math.PI / 2 || angle > Math.PI / 2) {
+	                    ctx.save();
+	                    ctx.rotate(Math.PI);
+	                    ctx.fillText(edgeText, -offset.x, -offset.y - 5);
+	                    ctx.restore();
+	                } else ctx.fillText(edgeText, offset.x, offset.y - 5);
 	
-		var renderNodes = function renderNodes() {
-			graph.nodes.forEach(renderNode);
-		};
+	                ctx.restore();
+	            };
 	
-		var renderNode = function renderNode(node) {
-			ctx.fillStyle = config.node[node.render.state].color;
+	            var renderNodes = function renderNodes() {
+	                graph.nodes.forEach(renderNode);
+	            };
 	
-			ctx.beginPath();
-			ctx.arc(node.render.x, node.render.y, config.node[node.render.state].size, 0, 2 * Math.PI, false);
-			ctx.fill();
-			ctx.closePath();
+	            var renderNode = function renderNode(node) {
+	                ctx.fillStyle = config.node[node.render.state].color;
 	
-			var font_size = config.node[node.render.state].size + 5;
-			var offset = -font_size / 2;
-			ctx.font = font_size + "px monospace";
-			ctx.fillText(node.id, node.render.x + config.node[node.render.state].size, node.render.y + offset);
-		};
+	                ctx.beginPath();
+	                ctx.arc(node.render.x, node.render.y, config.node[node.render.state].size, 0, 2 * Math.PI, false);
+	                ctx.fill();
+	                ctx.closePath();
 	
-		var calculateViewport = function calculateViewport() {
-			var x = (config.viewport.x - _this.viewportOffset.x) / zoomFactor;
-			var y = (config.viewport.y - _this.viewportOffset.y) / zoomFactor;
-			return { x: x, y: y };
-		};
+	                var font_size = config.node[node.render.state].size + 5;
+	                var offset = -font_size / 2;
+	                ctx.font = font_size + "px monospace";
+	                ctx.fillText(node.id, node.render.x + config.node[node.render.state].size, node.render.y + offset);
+	            };
 	
-		this.toViewport = function (x, y) {
-			var v = calculateViewport();
-			x = x / zoomFactor + v.x;
-			y = y / zoomFactor + v.y;
-			return { x: x, y: y };
-		};
+	            var calculateViewport = function calculateViewport() {
+	                var x = (config.viewport.x - _this.viewportOffset.x) / zoomFactor;
+	                var y = (config.viewport.y - _this.viewportOffset.y) / zoomFactor;
+	                return { x: x, y: y };
+	            };
 	
-		this.getConfig = function () {
-			return _this.config;
-		};
+	            _this.toViewport = function (x, y) {
+	                var v = calculateViewport();
+	                x = x / zoomFactor + v.x;
+	                y = y / zoomFactor + v.y;
+	                return { x: x, y: y };
+	            };
 	
-		this.zoom = function (dy) {
-			if (dy === undefined) return zoomFactor;else zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
-		};
+	            _this.getConfig = function () {
+	                return _this.config;
+	            };
 	
-		render();
+	            _this.zoom = function (dy) {
+	                if (dy === undefined) return zoomFactor;else zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
+	            };
+	
+	            render();
+	        })();
+	    }
 	};
 
 /***/ },
