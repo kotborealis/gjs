@@ -8094,10 +8094,6 @@
 	
 	var Gjs = _interopRequireWildcard(_Gjs);
 	
-	var _bfs = __webpack_require__(303);
-	
-	var BFS = _interopRequireWildcard(_bfs);
-	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	var gjs = new Gjs.Gjs("#gcanvas");
@@ -8131,7 +8127,7 @@
 	    x: 240,
 	    y: 300
 	}, {
-	    id: "аррр",
+	    id: 7,
 	    x: 240,
 	    y: 340
 	}]);
@@ -8146,8 +8142,8 @@
 	    t: 2
 	}, {
 	    id: 2,
-	    s: 0,
-	    t: 3
+	    s: 3,
+	    t: 0
 	}, {
 	    id: 3,
 	    s: 0,
@@ -8183,18 +8179,12 @@
 	}, {
 	    id: 11,
 	    s: 5,
-	    t: "аррр"
+	    t: 7
+	}, {
+	    id: 12,
+	    s: 6,
+	    t: 7
 	}]);
-	
-	var bfs_gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("0"));
-	
-	for (;;) {
-	    var a = bfs_gen.next();
-	    if (a.value.node === gjs.graph.nodesIndex.get("аррр")) {
-	        console.log(BFS.tracePath(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("аррр"), a.value.trace));
-	        break;
-	    }
-	}
 
 /***/ },
 /* 299 */
@@ -8718,7 +8708,7 @@
 	                var desiredOffset = 0;
 	
 	                if (drawedEdgesBySourceTarget.has(edge.s) && drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) desiredOffset = drawedEdgesBySourceTarget.get(edge.s).get(edge.t).size;
-	                if (drawedEdgesBySourceTarget.has(edge.t) && drawedEdgesBySourceTarget.get(edge.t).has(edge.s)) desiredOffset = drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size;
+	                if (drawedEdgesBySourceTarget.has(edge.t) && drawedEdgesBySourceTarget.get(edge.t).has(edge.s)) desiredOffset = Math.max(drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size, desiredOffset);
 	
 	                if (!drawedEdgesBySourceTarget.has(edge.s)) drawedEdgesBySourceTarget.set(edge.s, new Map());
 	                if (!drawedEdgesBySourceTarget.get(edge.s).has(edge.t)) drawedEdgesBySourceTarget.get(edge.s).set(edge.t, new Set());
@@ -8807,157 +8797,6 @@
 	            render();
 	        })();
 	    }
-	};
-
-/***/ },
-/* 303 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var generator = exports.generator = regeneratorRuntime.mark(function generator(graph, root) {
-	    var queue, trace, node, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, child;
-	
-	    return regeneratorRuntime.wrap(function generator$(_context) {
-	        while (1) {
-	            switch (_context.prev = _context.next) {
-	                case 0:
-	                    queue = [];
-	                    trace = new Map();
-	
-	
-	                    queue.push(root);
-	                    trace.set(root, 0);
-	
-	                case 4:
-	                    if (!queue.length) {
-	                        _context.next = 37;
-	                        break;
-	                    }
-	
-	                    node = queue.shift();
-	                    _context.next = 8;
-	                    return { type: "node", trace: trace, node: node };
-	
-	                case 8:
-	                    _iteratorNormalCompletion = true;
-	                    _didIteratorError = false;
-	                    _iteratorError = undefined;
-	                    _context.prev = 11;
-	                    _iterator = node.meta.neighbourNodes[Symbol.iterator]();
-	
-	                case 13:
-	                    if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-	                        _context.next = 21;
-	                        break;
-	                    }
-	
-	                    child = _step.value;
-	                    _context.next = 17;
-	                    return { type: "child", trace: trace, child: child };
-	
-	                case 17:
-	                    if (!trace.has(child)) {
-	                        trace.set(child, trace.get(node) + 1);
-	                        queue.push(child);
-	                    }
-	
-	                case 18:
-	                    _iteratorNormalCompletion = true;
-	                    _context.next = 13;
-	                    break;
-	
-	                case 21:
-	                    _context.next = 27;
-	                    break;
-	
-	                case 23:
-	                    _context.prev = 23;
-	                    _context.t0 = _context["catch"](11);
-	                    _didIteratorError = true;
-	                    _iteratorError = _context.t0;
-	
-	                case 27:
-	                    _context.prev = 27;
-	                    _context.prev = 28;
-	
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
-	                    }
-	
-	                case 30:
-	                    _context.prev = 30;
-	
-	                    if (!_didIteratorError) {
-	                        _context.next = 33;
-	                        break;
-	                    }
-	
-	                    throw _iteratorError;
-	
-	                case 33:
-	                    return _context.finish(30);
-	
-	                case 34:
-	                    return _context.finish(27);
-	
-	                case 35:
-	                    _context.next = 4;
-	                    break;
-	
-	                case 37:
-	                    _context.next = 39;
-	                    return { type: "end", trace: trace };
-	
-	                case 39:
-	                case "end":
-	                    return _context.stop();
-	            }
-	        }
-	    }, generator, this, [[11, 23, 27, 35], [28,, 30, 34]]);
-	});
-	
-	var tracePath = exports.tracePath = function tracePath(graph, source, target, trace) {
-	    var node = target;
-	    var path = [];
-	    path.push(target);
-	
-	    for (;;) {
-	        if (node === source) break;
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-	
-	        try {
-	            for (var _iterator2 = node.meta.reverseNeighbourNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var child = _step2.value;
-	
-	                if (trace.get(child) === trace.get(node) - 1) {
-	                    path.push(child);
-	                    node = child;
-	                    break;
-	                }
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                    _iterator2.return();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
-	    }
-	
-	    return path.reverse();
 	};
 
 /***/ }

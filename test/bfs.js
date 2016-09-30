@@ -5,9 +5,9 @@ import * as BFS from '../src/algorithms/bfs';
 const gjs = new Gjs.Gjs();
 
 gjs.graph.addNode([{id: 0}, {id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 6}, {id: 7}]);
-gjs.graph.addEdge([{id: 0, s: 0, t: 1}, {id: 1, s: 0, t: 2}, {id: 2, s: 0, t: 3}, {id: 3, s: 0, t: 3},
+gjs.graph.addEdge([{id: 0, s: 0, t: 1}, {id: 1, s: 0, t: 2}, {id: 2, s: 3, t: 0}, {id: 3, s: 0, t: 3},
     {id: 4, s: 0, t: 3}, {id: 5, s: 0, t: 3}, {id: 6, s: 0, t: 3}, {id: 7, s: 4, t: 0}, {id: 8, s: 0, t: 4},
-    {id: 9, s: 4, t: 5}, {id: 10, s: 5, t: 6}, {id: 11, s: 5, t: 7}]);
+    {id: 9, s: 4, t: 5}, {id: 10, s: 5, t: 6}, {id: 11, s: 5, t: 7}, {id: 12, s: 6, t: 7}]);
 
 describe('BFS', () => {
     describe('generator', () => {
@@ -37,5 +37,17 @@ describe('BFS', () => {
                 }
             }
         });
+    });
+    it('should return shortest path', () => {
+        const gen = BFS.generator(gjs.graph, gjs.graph.nodesIndex.get("3"));
+        for(;;){
+            const value = gen.next().value;
+            if(value.type === "end"){
+                let trace = value.trace;
+                const path = BFS.tracePath(gjs.graph, gjs.graph.nodesIndex.get("3"), gjs.graph.nodesIndex.get("7"), trace);
+                expect(path.map(node => node.id)).to.deep.equal([3, 0, 4, 5, 7].map(i => i.toString()));
+                break;
+            }
+        }
     });
 });

@@ -88,7 +88,7 @@ export const Render = function(canvasManager, graph){
                 desiredOffset = drawedEdgesBySourceTarget.get(edge.s).get(edge.t).size;
             if (drawedEdgesBySourceTarget.has(edge.t)
                 && drawedEdgesBySourceTarget.get(edge.t).has(edge.s))
-                desiredOffset = drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size;
+                desiredOffset = Math.max(drawedEdgesBySourceTarget.get(edge.t).get(edge.s).size, desiredOffset);
 
             if (!drawedEdgesBySourceTarget.has(edge.s))
                 drawedEdgesBySourceTarget.set(edge.s, new Map());
