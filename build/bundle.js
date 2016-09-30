@@ -8088,11 +8088,15 @@
 /* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	var _Gjs = __webpack_require__(299);
 	
 	var Gjs = _interopRequireWildcard(_Gjs);
+	
+	var _flowNetwork = __webpack_require__(304);
+	
+	var Flow = _interopRequireWildcard(_flowNetwork);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -8101,6 +8105,8 @@
 	gjs.graph.addNode([{ id: 0, x: 0, y: 0 }, { id: 1, x: 100, y: -100 }, { id: 2, x: 200, y: -100 }, { id: 3, x: 100, y: 100 }, { id: 4, x: 200, y: 100 }, { id: 5, x: 300, y: 0 }]);
 	
 	gjs.graph.addEdge([{ id: 0, s: 0, t: 1, weight: 3 }, { id: 1, s: 1, t: 0, weight: -3 }, { id: 2, s: 0, t: 3, weight: 3 }, { id: 3, s: 3, t: 0, weight: -3 }, { id: 4, s: 1, t: 3, weight: 2 }, { id: 5, s: 3, t: 1, weight: -2 }, { id: 6, s: 1, t: 2, weight: 3 }, { id: 7, s: 2, t: 1, weight: -3 }, { id: 8, s: 3, t: 4, weight: 2 }, { id: 9, s: 4, t: 3, weight: -2 }, { id: 10, s: 2, t: 4, weight: 4 }, { id: 11, s: 4, t: 2, weight: -4 }, { id: 12, s: 2, t: 5, weight: 2 }, { id: 13, s: 5, t: 2, weight: -2 }, { id: 14, s: 4, t: 5, weight: 3 }, { id: 15, s: 5, t: 4, weight: -3 }]);
+	
+	Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("5"));
 
 /***/ },
 /* 299 */
@@ -8236,6 +8242,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	var Graph = exports.Graph = function Graph() {
 	    var _this = this;
 	
@@ -8307,14 +8316,30 @@
 	        edge_obj.t.meta.reverseNeighbourNodes.add(edge_obj.s);
 	        edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
 	
-	        _this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
+	        if (!_this.edgeBySourceTarget.get(edge_obj.s).has(edge_obj.t)) _this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));else _this.edgeBySourceTarget.get(edge_obj.s).get(edge_obj.t).add(edge_obj);
 	
 	        _this.edges.add(edge_obj);
 	        _this.edgesIndex.set(edge_obj.id, edge_obj);
 	    };
 	
 	    this.getEdgeBySourceTarget = function (node_s, node_t) {
+	        return _this.edgeBySourceTarget.get(node_s).get(node_t).values().next().value;
+	    };
+	
+	    this.getEdgeSetBySourceTarget = function (node_s, node_t) {
 	        return _this.edgeBySourceTarget.get(node_s).get(node_t);
+	    };
+	
+	    this.clone = function () {
+	        var nInstance = new Graph();
+	        nInstance.addNode([].concat(_toConsumableArray(_this.nodes)).map(function (node) {
+	            return { id: node.id };
+	        }));
+	        nInstance.addEdge([].concat(_toConsumableArray(_this.edges)).map(function (edge) {
+	            return { id: edge.id, s: edge.s.id, t: edge.t.id, weight: edge.weight };
+	        }));
+	        return nInstance;
+	        1;
 	    };
 	};
 
@@ -8713,6 +8738,244 @@
 	            render();
 	        })();
 	    }
+	};
+
+/***/ },
+/* 303 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var generator = exports.generator = regeneratorRuntime.mark(function generator(graph, root) {
+	    var queue, trace, node, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, child;
+	
+	    return regeneratorRuntime.wrap(function generator$(_context) {
+	        while (1) {
+	            switch (_context.prev = _context.next) {
+	                case 0:
+	                    queue = [];
+	                    trace = new Map();
+	
+	
+	                    queue.push(root);
+	                    trace.set(root, 0);
+	
+	                case 4:
+	                    if (!queue.length) {
+	                        _context.next = 37;
+	                        break;
+	                    }
+	
+	                    node = queue.shift();
+	                    _context.next = 8;
+	                    return { type: "node", trace: trace, node: node };
+	
+	                case 8:
+	                    _iteratorNormalCompletion = true;
+	                    _didIteratorError = false;
+	                    _iteratorError = undefined;
+	                    _context.prev = 11;
+	                    _iterator = node.meta.neighbourNodes[Symbol.iterator]();
+	
+	                case 13:
+	                    if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+	                        _context.next = 21;
+	                        break;
+	                    }
+	
+	                    child = _step.value;
+	                    _context.next = 17;
+	                    return { type: "child", trace: trace, child: child };
+	
+	                case 17:
+	                    if (!trace.has(child)) {
+	                        trace.set(child, trace.get(node) + 1);
+	                        queue.push(child);
+	                    }
+	
+	                case 18:
+	                    _iteratorNormalCompletion = true;
+	                    _context.next = 13;
+	                    break;
+	
+	                case 21:
+	                    _context.next = 27;
+	                    break;
+	
+	                case 23:
+	                    _context.prev = 23;
+	                    _context.t0 = _context["catch"](11);
+	                    _didIteratorError = true;
+	                    _iteratorError = _context.t0;
+	
+	                case 27:
+	                    _context.prev = 27;
+	                    _context.prev = 28;
+	
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	
+	                case 30:
+	                    _context.prev = 30;
+	
+	                    if (!_didIteratorError) {
+	                        _context.next = 33;
+	                        break;
+	                    }
+	
+	                    throw _iteratorError;
+	
+	                case 33:
+	                    return _context.finish(30);
+	
+	                case 34:
+	                    return _context.finish(27);
+	
+	                case 35:
+	                    _context.next = 4;
+	                    break;
+	
+	                case 37:
+	                    _context.next = 39;
+	                    return { type: "end", trace: trace };
+	
+	                case 39:
+	                case "end":
+	                    return _context.stop();
+	            }
+	        }
+	    }, generator, this, [[11, 23, 27, 35], [28,, 30, 34]]);
+	});
+	
+	var tracePath = exports.tracePath = function tracePath(graph, source, target, trace) {
+	    var node = target;
+	    var path = [];
+	    path.push(target);
+	
+	    for (;;) {
+	        if (node === source) break;
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+	
+	        try {
+	            for (var _iterator2 = node.meta.reverseNeighbourNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var child = _step2.value;
+	
+	                if (trace.get(child) === trace.get(node) - 1) {
+	                    path.push(child);
+	                    node = child;
+	                    break;
+	                }
+	            }
+	        } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                    _iterator2.return();
+	                }
+	            } finally {
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
+	                }
+	            }
+	        }
+	    }
+	
+	    return path.reverse();
+	};
+	
+	var shortestPath = exports.shortestPath = function shortestPath(graph, source, target) {
+	    var gen = generator(graph, source, target);
+	    for (;;) {
+	        var value = gen.next().value;
+	        if (value.node === target) {
+	            return tracePath(graph, source, target, value.trace);
+	        } else if (value.type === "end") {
+	            return null;
+	        }
+	    }
+	};
+
+/***/ },
+/* 304 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.maxFlowFordFulkerson = undefined;
+	
+	var _bfs = __webpack_require__(303);
+	
+	var BFS = _interopRequireWildcard(_bfs);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var maxFlowFordFulkerson = exports.maxFlowFordFulkerson = function maxFlowFordFulkerson(graph, source, target) {
+	    throw new Error("WIP");
+	    var constrains = graph.clone();
+	    var flow = graph.clone();
+	
+	    var constrains_source = constrains.nodesIndex.get(source.id);
+	    var constrains_target = constrains.nodesIndex.get(target.id);
+	
+	    var flow_source = flow.nodesIndex.get(source.id);
+	    var flow_target = flow.nodesIndex.get(target.id);
+	
+	    flow.edges.forEach(function (edge) {
+	        edge.weight = 0;
+	    });
+	
+	    var bfs_gen = BFS.generator(constrains, constrains_source);
+	
+	    for (;;) {
+	        var value = bfs_gen.next().value;
+	        if (value.type === "node") {
+	            if (value.node === constrains_target) {
+	                var path = BFS.tracePath(constrains, constrains_source, constrains_target, value.trace);
+	                var path_w = Number.POSITIVE_INFINITY;
+	
+	                for (var i = 0; i < path.length - 1; i++) {
+	                    var constrains_s = constrains.nodesIndex.get(path[i].id);
+	                    var constrains_t = constrains.nodesIndex.get(path[i + 1].id);
+	
+	                    var w = constrains.getEdgeBySourceTarget(constrains_s, constrains_t).weight;
+	                    path_w = Math.min(path_w, w);
+	                }
+	
+	                if (path_w === 0) continue;
+	
+	                for (var _i = 0; _i < path.length - 1; _i++) {
+	                    var _constrains_s = constrains.nodesIndex.get(path[_i].id);
+	                    var _constrains_t = constrains.nodesIndex.get(path[_i + 1].id);
+	
+	                    var flow_s = flow.nodesIndex.get(path[_i].id);
+	                    var flow_t = flow.nodesIndex.get(path[_i + 1].id);
+	
+	                    constrains.getEdgeBySourceTarget(_constrains_s, _constrains_t).weight -= path_w;
+	                    constrains.getEdgeBySourceTarget(_constrains_t, _constrains_s).weight -= path_w;
+	
+	                    flow.getEdgeBySourceTarget(flow_s, flow_t).weight += path_w;
+	                    flow.getEdgeBySourceTarget(flow_t, flow_s).weight -= path_w;
+	                }
+	            }
+	        } else if (value.type === "end") {
+	            break;
+	        }
+	    }
+	    console.log("MAX FLOW");
+	    flow.edges.forEach(function (e) {
+	        console.log("Edge " + e.s.id + " -> " + e.t.id + ": " + e.weight);
+	    });
 	};
 
 /***/ }

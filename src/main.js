@@ -1,4 +1,5 @@
 import * as Gjs from './Gjs';
+import * as Flow from './algorithms/flowNetwork';
 
 const gjs = new Gjs.Gjs("#gcanvas");
 
@@ -29,3 +30,5 @@ gjs.graph.addEdge([
     {id: 14, s: 4, t: 5, weight: 3},
     {id: 15, s: 5, t: 4, weight: -3},
 ]);
+
+Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("5"));

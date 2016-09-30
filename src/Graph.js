@@ -73,13 +73,27 @@ export const Graph = function(){
         edge_obj.t.meta.reverseNeighbourNodes.add(edge_obj.s);
         edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
 
-    	this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, edge_obj);
+        if(!this.edgeBySourceTarget.get(edge_obj.s).has(edge_obj.t))
+    	    this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));
+        else
+            this.edgeBySourceTarget.get(edge_obj.s).get(edge_obj.t).add(edge_obj);
 
       	this.edges.add(edge_obj);
       	this.edgesIndex.set(edge_obj.id, edge_obj);
     };
 
     this.getEdgeBySourceTarget = (node_s, node_t) => {
-    	return this.edgeBySourceTarget.get(node_s).get(node_t);
+        return this.edgeBySourceTarget.get(node_s).get(node_t).values().next().value;
     };
+
+    this.getEdgeSetBySourceTarget = (node_s, node_t) => {
+        return this.edgeBySourceTarget.get(node_s).get(node_t);
+    };
+
+    this.clone = () => {
+        const nInstance = new Graph();
+        nInstance.addNode([...this.nodes].map(node => ({id: node.id})));
+        nInstance.addEdge([...this.edges].map(edge => ({id: edge.id, s: edge.s.id, t: edge.t.id, weight: edge.weight})));
+        return nInstance;
+1    };
 };
