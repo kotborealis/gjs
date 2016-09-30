@@ -8636,33 +8636,29 @@
 		edge: {
 			"": {
 				color: "#607D8B",
-				width: 4
-			},
-			"hover": {
-				color: "#9C27B0",
-				width: 4
+				width: 1
 			},
 			"out": {
 				color: "#5C6BC0",
-				width: 4
+				width: 1
 			},
 			"in": {
 				color: "#42A5F5",
-				width: 4
+				width: 1
 			}
 		},
 		node: {
 			"": {
 				color: "#607D8B",
-				size: 8
+				size: 6
 			},
 			"hover": {
 				color: "#FF5722",
-				size: 8
+				size: 6
 			}
 		},
-		multipleEdgesOffset: 20,
-		edgeArrow: { x: 10, y: 10 }
+		multipleEdgesOffset: 15,
+		edgeArrow: { x: 6, y: 4 }
 	};
 	
 	var Render = exports.Render = function Render(canvasManager, graph) {
@@ -8731,7 +8727,7 @@
 			var angle = Math.atan2(t.y - s.y, t.x - s.x);
 			var offset = {
 				x: dist / 2,
-				y: desiredOffset * config.multipleEdgesOffset
+				y: (desiredOffset / 2 >> 0) * config.multipleEdgesOffset * (desiredOffset % 2 === 0 ? 1 : -1)
 			};
 	
 			ctx.save();
