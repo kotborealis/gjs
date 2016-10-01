@@ -22,5 +22,3 @@ gjs.graph.addEdge([
     {id: 8, s: 1, t: 2, weight: 1},
     {id: 9, s: 2, t: 1, weight: 0},
 ]);
-
-Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("3"));
