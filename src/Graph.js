@@ -107,11 +107,4 @@ export const Graph = function(){
     this.getEdgeSetBySourceTarget = (node_s, node_t) => {
         return this.edgeBySourceTarget.get(node_s).get(node_t);
     };
-
-    this.clone = () => {
-        const nInstance = new Graph();
-        nInstance.addNode([...this.nodes].map(node => ({id: node.id})));
-        nInstance.addEdge([...this.edges].map(edge => ({id: edge.id, s: edge.s.id, t: edge.t.id, weight: edge.weight})));
-        return nInstance;
-1    };
 };
