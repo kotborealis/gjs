@@ -1,4 +1,7 @@
 export const Graph = function(){
+    let NODE_ID_GEN_SEQ = 0;
+    let EDGE_ID_GEN_SEQ = 0;
+
 	this.nodes = new Set();
 	this.edges = new Set();
 
@@ -13,7 +16,7 @@ export const Graph = function(){
 
     const addNodeHelper = node => {
     	if(node.id === undefined)
-    		throw new Error(`Node must have an id`);
+            node.id = NODE_ID_GEN_SEQ++;
     	if(this.nodesIndex.has(node.id.toString()))
     		throw new Error(`Node with id ${node.id.toString()} already exists`);
 
@@ -46,7 +49,7 @@ export const Graph = function(){
 
     const addEdgeHelper = edge => {
     	if(edge.id === undefined)
-    		throw new Error(`Edge must have an id`);
+    		edge.id = EDGE_ID_GEN_SEQ++;
     	if(this.edgesIndex.has(edge.id.toString()))
     		throw new Error(`Edge already exists`);
     	if(edge.s === undefined  || edge.t === undefined)
