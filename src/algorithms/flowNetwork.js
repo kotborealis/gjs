@@ -14,15 +14,9 @@ export const maxFlowFordFulkerson = function (graph, source, target){
 
     let path = findFlowEdgePath(graph, constrains_source, constrains_target);
     while(path){
-        console.log("Found path");
-        console.log(path.map(e => e.s.id + ' ' + e.t.id).join(' -> '));
-
         const path_w = path.reduce((min_w, edge) => {
             return Math.min(min_w, edge.weight);
         }, Number.POSITIVE_INFINITY);
-
-        console.log("Path w",path_w);
-
         path.forEach(edge => {
             const constrains_edge = constrains.edgesIndex.get(edge.id);
             const flow_edge = flow.edgesIndex.get(edge.id);
@@ -34,22 +28,10 @@ export const maxFlowFordFulkerson = function (graph, source, target){
             flow_edge.meta.reverseEdge.weight -= path_w;
         });
 
-        console.log("constrains");
-        constrains.edges.forEach(e => {
-            console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
-        });
-
-        console.log("flow");
-        flow.edges.forEach(e => {
-            console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
-        });
-
         path = findFlowEdgePath(graph, constrains_source, constrains_target);
     }
-    console.log("MAX FLOW");
-    flow.edges.forEach(e => {
-        console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
-    });
+
+    return flow;
 };
 
 const findFlowEdgePath = function (graph, source, target){

@@ -8102,11 +8102,11 @@
 	
 	var gjs = new Gjs.Gjs("#gcanvas");
 	
-	gjs.graph.addNode([{ id: 0, x: 0, y: 0 }, { id: 1, x: 100, y: -100 }, { id: 2, x: 200, y: -100 }, { id: 3, x: 100, y: 100 }, { id: 4, x: 200, y: 100 }, { id: 5, x: 300, y: 0 }]);
+	gjs.graph.addNode([{ id: 0, x: 0, y: 0 }, { id: 1, x: 100, y: -100 }, { id: 2, x: 100, y: 100 }, { id: 3, x: 200, y: 0 }]);
 	
-	gjs.graph.addEdge([{ id: 0, s: 0, t: 1, weight: 3 }, { id: 1, s: 1, t: 0, weight: 0 }, { id: 2, s: 0, t: 3, weight: 3 }, { id: 3, s: 3, t: 0, weight: 0 }, { id: 4, s: 1, t: 3, weight: 2 }, { id: 5, s: 3, t: 1, weight: 0 }, { id: 6, s: 1, t: 2, weight: 3 }, { id: 7, s: 2, t: 1, weight: 0 }, { id: 8, s: 3, t: 4, weight: 2 }, { id: 9, s: 4, t: 3, weight: 0 }, { id: 10, s: 2, t: 4, weight: 4 }, { id: 11, s: 4, t: 2, weight: 0 }, { id: 12, s: 2, t: 5, weight: 2 }, { id: 13, s: 5, t: 2, weight: 0 }, { id: 14, s: 4, t: 5, weight: 3 }, { id: 15, s: 5, t: 4, weight: 0 }]);
+	gjs.graph.addEdge([{ id: 0, s: 0, t: 1, weight: 10 }, { id: 1, s: 1, t: 0, weight: 0 }, { id: 2, s: 0, t: 2, weight: 10 }, { id: 3, s: 2, t: 0, weight: 0 }, { id: 4, s: 1, t: 3, weight: 10 }, { id: 5, s: 3, t: 1, weight: 0 }, { id: 6, s: 2, t: 3, weight: 10 }, { id: 7, s: 3, t: 2, weight: 0 }, { id: 8, s: 1, t: 2, weight: 1 }, { id: 9, s: 2, t: 1, weight: 0 }]);
 	
-	Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("5"));
+	Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("3"));
 
 /***/ },
 /* 299 */
@@ -8788,17 +8788,9 @@
 	    var path = findFlowEdgePath(graph, constrains_source, constrains_target);
 	
 	    var _loop = function _loop() {
-	        console.log("Found path");
-	        console.log(path.map(function (e) {
-	            return e.s.id + ' ' + e.t.id;
-	        }).join(' -> '));
-	
 	        var path_w = path.reduce(function (min_w, edge) {
 	            return Math.min(min_w, edge.weight);
 	        }, Number.POSITIVE_INFINITY);
-	
-	        console.log("Path w", path_w);
-	
 	        path.forEach(function (edge) {
 	            var constrains_edge = constrains.edgesIndex.get(edge.id);
 	            var flow_edge = flow.edgesIndex.get(edge.id);
@@ -8810,26 +8802,14 @@
 	            flow_edge.meta.reverseEdge.weight -= path_w;
 	        });
 	
-	        console.log("constrains");
-	        constrains.edges.forEach(function (e) {
-	            console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
-	        });
-	
-	        console.log("flow");
-	        flow.edges.forEach(function (e) {
-	            console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
-	        });
-	
 	        path = findFlowEdgePath(graph, constrains_source, constrains_target);
 	    };
 	
 	    while (path) {
 	        _loop();
 	    }
-	    console.log("MAX FLOW");
-	    flow.edges.forEach(function (e) {
-	        console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
-	    });
+	
+	    return flow;
 	};
 	
 	var findFlowEdgePath = function findFlowEdgePath(graph, source, target) {
