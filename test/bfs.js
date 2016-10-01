@@ -1,12 +1,12 @@
 const expect = require('chai').expect;
 
-import * as Graph from '../src/Graph';
+import Graph from '../src/Graph';
 import * as BFS from '../src/algorithms/bfs';
 
 describe('BFS', () => {
     describe('shortestPath', () => {
         it('should return shortest path from source to target', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
             graph.addNode([{},{},{},{},{},{},{},{}]);
             graph.addEdge([
                 {s: 0, t: 1},

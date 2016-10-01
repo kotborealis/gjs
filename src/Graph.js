@@ -1,4 +1,4 @@
-export const Graph = function(){
+export default function(){
     let NODE_ID_GEN_SEQ = 0;
     let EDGE_ID_GEN_SEQ = 0;
 

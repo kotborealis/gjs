@@ -5,7 +5,7 @@ import CanvasManager from './CanvasManager';
 import * as GraphRender from './GraphRender';
 
 export const Gjs = function(canvas_selector) {
-    this.graph = new Graph.Graph();
+    this.graph = new Graph();
 
     const canvas = new CanvasManager(canvas_selector, {fullscreen: true, enableDrag: true});
     const render = new GraphRender.Render(canvas, this.graph);

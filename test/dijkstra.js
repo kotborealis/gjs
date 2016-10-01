@@ -1,12 +1,12 @@
 const expect = require('chai').expect;
 
-import * as Graph from '../src/Graph';
+import Graph from '../src/Graph';
 import * as Dijkstra from '../src/algorithms/dijkstra';
 
 describe('Dijkstra', () => {
     describe('shortestPath', () => {
         it('should return shortest path', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
             graph.addNode([{id:1},{id:2},{id:3},{id:4},{id:5},{id:6}]);
             graph.addEdge([
                 {s:1,t:2,weight:7},

@@ -1,12 +1,12 @@
 const expect = require('chai').expect;
 
-import * as Graph from '../src/Graph';
+import Graph from '../src/Graph';
 import * as FlowNetwork from '../src/algorithms/flowNetwork';
 
 describe('flowNetwork', () => {
     describe('maxFlowFordFulkerson', () => {
         it('should return max flow [1]', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
 
             //http://i.imgur.com/nddgthq.png
             graph.addNode([{},{},{},{}]);
@@ -30,7 +30,7 @@ describe('flowNetwork', () => {
         });
 
         it('should return max flow [2]', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
 
             //http://i.imgur.com/zDm1GYa.png
             graph.addNode([{}, {}, {}, {}, {}, {}]);
@@ -60,7 +60,7 @@ describe('flowNetwork', () => {
         });
 
         it('should return max flow [3]', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
 
             graph.addNode([{}, {}, {}, {}]);
 
@@ -87,7 +87,7 @@ describe('flowNetwork', () => {
         });
 
         it('should return max flow [4]', () => {
-            const graph = new Graph.Graph();
+            const graph = new Graph();
 
             graph.addNode([{}, {}, {}, {}]);
 
