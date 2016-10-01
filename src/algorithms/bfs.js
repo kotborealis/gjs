@@ -3,7 +3,7 @@ export const generator = function* (graph, root) {
     const trace = new Map();
 
     queue.push(root);
-    trace.set(root, 0);
+    trace.set(root, null);
 
     while(queue.length){
         const node = queue.shift();
@@ -11,7 +11,7 @@ export const generator = function* (graph, root) {
         for(let child of node.meta.neighbourNodes){
             yield {type: "child", trace, child};
             if(!trace.has(child)){
-                trace.set(child, trace.get(node) + 1);
+                trace.set(child, node);
                 queue.push(child);
             }
         }
@@ -19,23 +19,34 @@ export const generator = function* (graph, root) {
     yield {type: "end", trace};
 };
 
-export const tracePath = (graph, source, target, trace) => {
-    let node = target;
-    const path = [];
-    path.push(target);
+export const pathGenerator = function* (graph, source, target) {
+    const queue = [];
+    const trace = new Map();
 
-    for(;;){
-        if(node === source)
-            break;
-        for(let child of node.meta.reverseNeighbourNodes){
-            if(trace.get(child) === trace.get(node) - 1){
-                path.push(child);
-                node = child;
-                break;
+    queue.push(source);
+    trace.set(source, null);
+
+    while(queue.length){
+        const node = queue.shift();
+        if(node === target){
+            yield {type: "path", path: tracePath(graph, source, target, trace)};
+        }
+        for(let child of node.meta.neighbourNodes){
+            if(!trace.has(child)){
+                trace.set(child, node);
+                queue.push(child);
             }
         }
     }
+};
 
+export const tracePath = (graph, source, target, trace) => {
+    const path = [target];
+    let node = trace.get(target);
+    while(node){
+        path.push(node);
+        node = trace.get(node);
+    }
     return path.reverse();
 };
 
