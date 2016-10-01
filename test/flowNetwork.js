@@ -62,7 +62,6 @@ describe('flowNetwork', () => {
         it('should return max flow [3]', () => {
             const graph = new Graph.Graph();
 
-            //http://i.imgur.com/zDm1GYa.png
             graph.addNode([{}, {}, {}, {}]);
 
             graph.addEdge([
@@ -85,10 +84,33 @@ describe('flowNetwork', () => {
             const flow = calcFlow(graph, 0, 3);
             expect(flow.flow_array).to.deep.equal([2,-2,3,-3,0,0,2,-2,0,0].sort((l, r) => l > r));
             expect(flow.capacity).to.equal(5);
+        });
 
-            const flow2 = calcFlow(graph, 0, 2);
-            expect(flow2.flow_array).to.deep.equal([2,-2,3,-3,3,-3,-1,1,-2,2].sort((l, r) => l > r));
-            expect(flow2.capacity).to.equal(5);
+        it('should return max flow [4]', () => {
+            const graph = new Graph.Graph();
+
+            graph.addNode([{}, {}, {}, {}]);
+
+            graph.addEdge([
+                {s: 0, t: 1, weight: 2},
+                {s: 1, t: 0, weight: 2},
+
+                {s: 0, t: 3, weight: 3},
+                {s: 3, t: 0, weight: 3},
+
+                {s: 1, t: 2, weight: 3},
+                {s: 2, t: 1, weight: 3},
+
+                {s: 1, t: 3, weight: 5},
+                {s: 3, t: 1, weight: 5},
+
+                {s: 2, t: 3, weight: 7},
+                {s: 3, t: 2, weight: 7}
+            ]);
+
+            const flow = calcFlow(graph, 0, 2);
+            expect(flow.flow_array).to.deep.equal([2,-2,3,-3,2,-2,0,0,-3,3].sort((l, r) => l > r));
+            expect(flow.capacity).to.equal(5);
         });
     });
 });

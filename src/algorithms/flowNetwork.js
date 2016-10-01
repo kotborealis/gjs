@@ -38,14 +38,12 @@ const findFlowEdgePath = function (graph, flow, source, target){
     while(queue.length){
         const node = queue.shift();
         visited.add(node);
-        if(node === target){
-            return traceFlowEdgePath(source, target, trace);
-        }
-        else {
-            for (let outEdge of node.meta.sourceOf) {
-                if (outEdge.weight - flow.get(outEdge) > 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
-                    trace.set(outEdge.t, outEdge);
-                    queue.push(outEdge.t);
+        for (let childEdge of node.meta.sourceOf) {
+            if (childEdge.weight - flow.get(childEdge) > 0 && !trace.has(childEdge) && !visited.has(childEdge.t)) {
+                trace.set(childEdge.t, childEdge);
+                queue.push(childEdge.t);
+                if(childEdge.t === target){
+                    return traceFlowEdgePath(source, target, trace);
                 }
             }
         }
