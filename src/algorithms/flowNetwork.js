@@ -1,18 +1,19 @@
 export const maxFlowFordFulkerson = function (graph, source, target){
-    const flow = graph.clone();
 
-    flow.edges.forEach(edge => {edge.weight = 0;});
+    const flow = new Map();
+    graph.edges.forEach(edge => {
+        flow.set(edge, 0);
+    });
 
     let path = findFlowEdgePath(graph, flow, source, target);
     while(path){
         const path_w = path.reduce((min_w, edge) => {
-            return Math.min(min_w, edge.weight - flow.edgesIndex.get(edge.id).weight);
+            return Math.min(min_w, edge.weight - flow.get(edge));
         }, Number.POSITIVE_INFINITY);
 
         path.forEach(edge => {
-            const flow_edge = flow.edgesIndex.get(edge.id);
-            flow_edge.weight += path_w;
-            flow_edge.meta.reverseEdge.weight -= path_w;
+            flow.set(edge, flow.get(edge) + path_w);
+            flow.set(edge.meta.reverseEdge, flow.get(edge.meta.reverseEdge) - path_w);
         });
 
         path = findFlowEdgePath(graph, flow, source, target);
@@ -37,7 +38,7 @@ const findFlowEdgePath = function (graph, flow, source, target){
         }
         else {
             for (let outEdge of node.meta.sourceOf) {
-                if (outEdge.weight - flow.edgesIndex.get(outEdge.id).weight > 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
+                if (outEdge.weight - flow.get(outEdge) > 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
                     trace.set(outEdge.t, outEdge);
                     queue.push(outEdge.t);
                 }

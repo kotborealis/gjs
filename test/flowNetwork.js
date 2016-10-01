@@ -29,7 +29,7 @@ describe('flowNetwork', () => {
                 {id: 9, s: 2, t: 1, weight: 1},
             ]);
 
-            expect(getFlowArray(graph, 0, 3)).to.deep.equal([10,-10,10,-10,10,-10,10,-10,0,0]);
+            expect(getFlowArray(graph, 0, 3)).to.deep.equal([10,-10,10,-10,10,-10,10,-10,0,0].sort((l, r) => l > r));
         });
 
         it('should return max flow [2]', () => {
@@ -64,7 +64,7 @@ describe('flowNetwork', () => {
                 {id: 15, s: 5, t: 4, weight: 3},
             ]);
 
-            expect(getFlowArray(graph, 0, 5)).to.deep.equal([3, -3, 2, -2, 0, 0, 3, -3, 2, -2, 1, -1, 2, -2, 3, -3]);
+            expect(getFlowArray(graph, 0, 5)).to.deep.equal([3, -3, 2, -2, 0, 0, 3, -3, 2, -2, 1, -1, 2, -2, 3, -3].sort((l, r) => l > r));
         });
     });
 });
@@ -72,6 +72,6 @@ describe('flowNetwork', () => {
 const getFlowArray = (graph, s, t) => {
     const flow = FlowNetwork.maxFlowFordFulkerson(graph, graph.nodesIndex.get(s.toString()), graph.nodesIndex.get(t.toString()));
     const flow_array = [];
-    flow.edges.forEach(e => flow_array.push(e.weight));
-    return flow_array;
+    flow.forEach(_ => flow_array.push(_));
+    return flow_array.sort((l, r) => l > r);
 };
