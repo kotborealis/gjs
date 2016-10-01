@@ -18,15 +18,15 @@ describe('flowNetwork', () => {
 
             graph.addEdge([
                 {id: 0, s: 0, t: 1, weight: 10},
-                {id: 1, s: 1, t: 0, weight: 0},
+                {id: 1, s: 1, t: 0, weight: 10},
                 {id: 2, s: 0, t: 2, weight: 10},
-                {id: 3, s: 2, t: 0, weight: 0},
+                {id: 3, s: 2, t: 0, weight: 10},
                 {id: 4, s: 1, t: 3, weight: 10},
-                {id: 5, s: 3, t: 1, weight: 0},
+                {id: 5, s: 3, t: 1, weight: 10},
                 {id: 6, s: 2, t: 3, weight: 10},
-                {id: 7, s: 3, t: 2, weight: 0},
+                {id: 7, s: 3, t: 2, weight: 10},
                 {id: 8, s: 1, t: 2, weight: 1},
-                {id: 9, s: 2, t: 1, weight: 0},
+                {id: 9, s: 2, t: 1, weight: 1},
             ]);
 
             expect(getFlowArray(graph, 0, 3)).to.deep.equal([10,-10,10,-10,10,-10,10,-10,0,0]);
@@ -47,21 +47,21 @@ describe('flowNetwork', () => {
 
             graph.addEdge([
                 {id: 0, s: 0, t: 1, weight: 3},
-                {id: 1, s: 1, t: 0, weight: 0},
+                {id: 1, s: 1, t: 0, weight: 3},
                 {id: 2, s: 0, t: 3, weight: 3},
-                {id: 3, s: 3, t: 0, weight: 0},
+                {id: 3, s: 3, t: 0, weight: 3},
                 {id: 4, s: 1, t: 3, weight: 2},
-                {id: 5, s: 3, t: 1, weight: 0},
+                {id: 5, s: 3, t: 1, weight: 2},
                 {id: 6, s: 1, t: 2, weight: 3},
-                {id: 7, s: 2, t: 1, weight: 0},
+                {id: 7, s: 2, t: 1, weight: 3},
                 {id: 8, s: 3, t: 4, weight: 2},
-                {id: 9, s: 4, t: 3, weight: 0},
+                {id: 9, s: 4, t: 3, weight: 2},
                 {id: 10, s: 2, t: 4, weight: 4},
-                {id: 11, s: 4, t: 2, weight: 0},
+                {id: 11, s: 4, t: 2, weight: 4},
                 {id: 12, s: 2, t: 5, weight: 2},
-                {id: 13, s: 5, t: 2, weight: 0},
+                {id: 13, s: 5, t: 2, weight: 2},
                 {id: 14, s: 4, t: 5, weight: 3},
-                {id: 15, s: 5, t: 4, weight: 0},
+                {id: 15, s: 5, t: 4, weight: 3},
             ]);
 
             expect(getFlowArray(graph, 0, 5)).to.deep.equal([3, -3, 2, -2, 0, 0, 3, -3, 2, -2, 1, -1, 2, -2, 3, -3]);

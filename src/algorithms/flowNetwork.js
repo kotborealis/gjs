@@ -1,40 +1,27 @@
-import * as BFS from './bfs';
-
 export const maxFlowFordFulkerson = function (graph, source, target){
-    const constrains = graph.clone();
     const flow = graph.clone();
-
-    const constrains_source = constrains.nodesIndex.get(source.id);
-    const constrains_target = constrains.nodesIndex.get(target.id);
-
-    const flow_source = flow.nodesIndex.get(source.id);
-    const flow_target = flow.nodesIndex.get(target.id);
 
     flow.edges.forEach(edge => {edge.weight = 0;});
 
-    let path = findFlowEdgePath(graph, constrains_source, constrains_target);
+    let path = findFlowEdgePath(graph, flow, source, target);
     while(path){
         const path_w = path.reduce((min_w, edge) => {
-            return Math.min(min_w, edge.weight);
+            return Math.min(min_w, edge.weight - flow.edgesIndex.get(edge.id).weight);
         }, Number.POSITIVE_INFINITY);
+
         path.forEach(edge => {
-            const constrains_edge = constrains.edgesIndex.get(edge.id);
             const flow_edge = flow.edgesIndex.get(edge.id);
-
-            constrains_edge.weight -= path_w;
-            constrains_edge.meta.reverseEdge.weight += path_w;
-
             flow_edge.weight += path_w;
             flow_edge.meta.reverseEdge.weight -= path_w;
         });
 
-        path = findFlowEdgePath(graph, constrains_source, constrains_target);
+        path = findFlowEdgePath(graph, flow, source, target);
     }
 
     return flow;
 };
 
-const findFlowEdgePath = function (graph, source, target){
+const findFlowEdgePath = function (graph, flow, source, target){
     const queue = [];
     const trace = new Map();
     const visited = new Set();
@@ -46,11 +33,11 @@ const findFlowEdgePath = function (graph, source, target){
         const node = queue.shift();
         visited.add(node);
         if(node === target){
-            return traceFlowEdgePath(graph, source, target, trace);
+            return traceFlowEdgePath(source, target, trace);
         }
         else {
             for (let outEdge of node.meta.sourceOf) {
-                if (outEdge.weight !== 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
+                if (outEdge.weight - flow.edgesIndex.get(outEdge.id).weight > 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
                     trace.set(outEdge.t, outEdge);
                     queue.push(outEdge.t);
                 }
@@ -61,7 +48,7 @@ const findFlowEdgePath = function (graph, source, target){
     return null;
 };
 
-const traceFlowEdgePath = function(graph, source, target, trace){
+const traceFlowEdgePath = function(source, target, trace){
     const path = [trace.get(target)];
     let node = trace.get(target).s;
     while(trace.get(node)){
