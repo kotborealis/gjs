@@ -8094,7 +8094,7 @@
 	
 	var Gjs = _interopRequireWildcard(_Gjs);
 	
-	var _flowNetwork = __webpack_require__(304);
+	var _flowNetwork = __webpack_require__(303);
 	
 	var Flow = _interopRequireWildcard(_flowNetwork);
 	
@@ -8104,7 +8104,7 @@
 	
 	gjs.graph.addNode([{ id: 0, x: 0, y: 0 }, { id: 1, x: 100, y: -100 }, { id: 2, x: 200, y: -100 }, { id: 3, x: 100, y: 100 }, { id: 4, x: 200, y: 100 }, { id: 5, x: 300, y: 0 }]);
 	
-	gjs.graph.addEdge([{ id: 0, s: 0, t: 1, weight: 3 }, { id: 1, s: 1, t: 0, weight: -3 }, { id: 2, s: 0, t: 3, weight: 3 }, { id: 3, s: 3, t: 0, weight: -3 }, { id: 4, s: 1, t: 3, weight: 2 }, { id: 5, s: 3, t: 1, weight: -2 }, { id: 6, s: 1, t: 2, weight: 3 }, { id: 7, s: 2, t: 1, weight: -3 }, { id: 8, s: 3, t: 4, weight: 2 }, { id: 9, s: 4, t: 3, weight: -2 }, { id: 10, s: 2, t: 4, weight: 4 }, { id: 11, s: 4, t: 2, weight: -4 }, { id: 12, s: 2, t: 5, weight: 2 }, { id: 13, s: 5, t: 2, weight: -2 }, { id: 14, s: 4, t: 5, weight: 3 }, { id: 15, s: 5, t: 4, weight: -3 }]);
+	gjs.graph.addEdge([{ id: 0, s: 0, t: 1, weight: 3 }, { id: 1, s: 1, t: 0, weight: 0 }, { id: 2, s: 0, t: 3, weight: 3 }, { id: 3, s: 3, t: 0, weight: 0 }, { id: 4, s: 1, t: 3, weight: 2 }, { id: 5, s: 3, t: 1, weight: 0 }, { id: 6, s: 1, t: 2, weight: 3 }, { id: 7, s: 2, t: 1, weight: 0 }, { id: 8, s: 3, t: 4, weight: 2 }, { id: 9, s: 4, t: 3, weight: 0 }, { id: 10, s: 2, t: 4, weight: 4 }, { id: 11, s: 4, t: 2, weight: 0 }, { id: 12, s: 2, t: 5, weight: 2 }, { id: 13, s: 5, t: 2, weight: 0 }, { id: 14, s: 4, t: 5, weight: 3 }, { id: 15, s: 5, t: 4, weight: 0 }]);
 	
 	Flow.maxFlowFordFulkerson(gjs.graph, gjs.graph.nodesIndex.get("0"), gjs.graph.nodesIndex.get("5"));
 
@@ -8304,6 +8304,10 @@
 	            weight: Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight),
 	            render: {
 	                state: ""
+	            },
+	            meta: {
+	                reverseEdge: null,
+	                multipleEdges: new Set()
 	            }
 	        };
 	
@@ -8317,6 +8321,16 @@
 	        edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
 	
 	        if (!_this.edgeBySourceTarget.get(edge_obj.s).has(edge_obj.t)) _this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));else _this.edgeBySourceTarget.get(edge_obj.s).get(edge_obj.t).add(edge_obj);
+	
+	        _this.edges.forEach(function (_edge) {
+	            if (_edge.s === edge_obj.t && _edge.t === edge_obj.s && !_edge.meta.reverseEdge) {
+	                _edge.meta.reverseEdge = edge_obj;
+	                edge_obj.meta.reverseEdge = _edge;
+	            } else if (_edge.s === edge_obj.s && _edge.t === edge_obj.t) {
+	                _edge.meta.multipleEdges.add(edge_obj);
+	                edge_obj.meta.multipleEdges.add(_edge);
+	            }
+	        });
 	
 	        _this.edges.add(edge_obj);
 	        _this.edgesIndex.set(edge_obj.id, edge_obj);
@@ -8742,6 +8756,141 @@
 
 /***/ },
 /* 303 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.maxFlowFordFulkerson = undefined;
+	
+	var _bfs = __webpack_require__(304);
+	
+	var BFS = _interopRequireWildcard(_bfs);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	var maxFlowFordFulkerson = exports.maxFlowFordFulkerson = function maxFlowFordFulkerson(graph, source, target) {
+	    var constrains = graph.clone();
+	    var flow = graph.clone();
+	
+	    var constrains_source = constrains.nodesIndex.get(source.id);
+	    var constrains_target = constrains.nodesIndex.get(target.id);
+	
+	    var flow_source = flow.nodesIndex.get(source.id);
+	    var flow_target = flow.nodesIndex.get(target.id);
+	
+	    flow.edges.forEach(function (edge) {
+	        edge.weight = 0;
+	    });
+	
+	    var path = findFlowEdgePath(graph, constrains_source, constrains_target);
+	
+	    var _loop = function _loop() {
+	        console.log("Found path");
+	        console.log(path.map(function (e) {
+	            return e.s.id + ' ' + e.t.id;
+	        }).join(' -> '));
+	
+	        var path_w = path.reduce(function (min_w, edge) {
+	            return Math.min(min_w, edge.weight);
+	        }, Number.POSITIVE_INFINITY);
+	
+	        console.log("Path w", path_w);
+	
+	        path.forEach(function (edge) {
+	            var constrains_edge = constrains.edgesIndex.get(edge.id);
+	            var flow_edge = flow.edgesIndex.get(edge.id);
+	
+	            constrains_edge.weight -= path_w;
+	            constrains_edge.meta.reverseEdge.weight += path_w;
+	
+	            flow_edge.weight += path_w;
+	            flow_edge.meta.reverseEdge.weight -= path_w;
+	        });
+	
+	        console.log("constrains");
+	        constrains.edges.forEach(function (e) {
+	            console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
+	        });
+	
+	        console.log("flow");
+	        flow.edges.forEach(function (e) {
+	            console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
+	        });
+	
+	        path = findFlowEdgePath(graph, constrains_source, constrains_target);
+	    };
+	
+	    while (path) {
+	        _loop();
+	    }
+	    console.log("MAX FLOW");
+	    flow.edges.forEach(function (e) {
+	        console.log('Edge ' + e.s.id + ' -> ' + e.t.id + ': ' + e.weight);
+	    });
+	};
+	
+	var findFlowEdgePath = function findFlowEdgePath(graph, source, target) {
+	    var queue = [];
+	    var trace = new Map();
+	    var visited = new Set();
+	
+	    queue.push(source);
+	    trace.set(source, null);
+	
+	    while (queue.length) {
+	        var node = queue.shift();
+	        visited.add(node);
+	        if (node === target) {
+	            return traceFlowEdgePath(graph, source, target, trace);
+	        } else {
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+	
+	            try {
+	                for (var _iterator = node.meta.sourceOf[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var outEdge = _step.value;
+	
+	                    if (outEdge.weight !== 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
+	                        trace.set(outEdge.t, outEdge);
+	                        queue.push(outEdge.t);
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+	        }
+	    }
+	
+	    return null;
+	};
+	
+	var traceFlowEdgePath = function traceFlowEdgePath(graph, source, target, trace) {
+	    var path = [trace.get(target)];
+	    var node = trace.get(target).s;
+	    while (trace.get(node)) {
+	        path.push(trace.get(node));
+	        node = trace.get(node).s;
+	    }
+	    return path.reverse();
+	};
+
+/***/ },
+/* 304 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -8761,7 +8910,7 @@
 	
 	
 	                    queue.push(root);
-	                    trace.set(root, 0);
+	                    trace.set(root, null);
 	
 	                case 4:
 	                    if (!queue.length) {
@@ -8792,7 +8941,7 @@
 	
 	                case 17:
 	                    if (!trace.has(child)) {
-	                        trace.set(child, trace.get(node) + 1);
+	                        trace.set(child, node);
 	                        queue.push(child);
 	                    }
 	
@@ -8852,42 +9001,12 @@
 	});
 	
 	var tracePath = exports.tracePath = function tracePath(graph, source, target, trace) {
-	    var node = target;
-	    var path = [];
-	    path.push(target);
-	
-	    for (;;) {
-	        if (node === source) break;
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-	
-	        try {
-	            for (var _iterator2 = node.meta.reverseNeighbourNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                var child = _step2.value;
-	
-	                if (trace.get(child) === trace.get(node) - 1) {
-	                    path.push(child);
-	                    node = child;
-	                    break;
-	                }
-	            }
-	        } catch (err) {
-	            _didIteratorError2 = true;
-	            _iteratorError2 = err;
-	        } finally {
-	            try {
-	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                    _iterator2.return();
-	                }
-	            } finally {
-	                if (_didIteratorError2) {
-	                    throw _iteratorError2;
-	                }
-	            }
-	        }
+	    var path = [target];
+	    var node = trace.get(target);
+	    while (node) {
+	        path.push(node);
+	        node = trace.get(node);
 	    }
-	
 	    return path.reverse();
 	};
 	
@@ -8901,81 +9020,6 @@
 	            return null;
 	        }
 	    }
-	};
-
-/***/ },
-/* 304 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.maxFlowFordFulkerson = undefined;
-	
-	var _bfs = __webpack_require__(303);
-	
-	var BFS = _interopRequireWildcard(_bfs);
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	var maxFlowFordFulkerson = exports.maxFlowFordFulkerson = function maxFlowFordFulkerson(graph, source, target) {
-	    throw new Error("WIP");
-	    var constrains = graph.clone();
-	    var flow = graph.clone();
-	
-	    var constrains_source = constrains.nodesIndex.get(source.id);
-	    var constrains_target = constrains.nodesIndex.get(target.id);
-	
-	    var flow_source = flow.nodesIndex.get(source.id);
-	    var flow_target = flow.nodesIndex.get(target.id);
-	
-	    flow.edges.forEach(function (edge) {
-	        edge.weight = 0;
-	    });
-	
-	    var bfs_gen = BFS.generator(constrains, constrains_source);
-	
-	    for (;;) {
-	        var value = bfs_gen.next().value;
-	        if (value.type === "node") {
-	            if (value.node === constrains_target) {
-	                var path = BFS.tracePath(constrains, constrains_source, constrains_target, value.trace);
-	                var path_w = Number.POSITIVE_INFINITY;
-	
-	                for (var i = 0; i < path.length - 1; i++) {
-	                    var constrains_s = constrains.nodesIndex.get(path[i].id);
-	                    var constrains_t = constrains.nodesIndex.get(path[i + 1].id);
-	
-	                    var w = constrains.getEdgeBySourceTarget(constrains_s, constrains_t).weight;
-	                    path_w = Math.min(path_w, w);
-	                }
-	
-	                if (path_w === 0) continue;
-	
-	                for (var _i = 0; _i < path.length - 1; _i++) {
-	                    var _constrains_s = constrains.nodesIndex.get(path[_i].id);
-	                    var _constrains_t = constrains.nodesIndex.get(path[_i + 1].id);
-	
-	                    var flow_s = flow.nodesIndex.get(path[_i].id);
-	                    var flow_t = flow.nodesIndex.get(path[_i + 1].id);
-	
-	                    constrains.getEdgeBySourceTarget(_constrains_s, _constrains_t).weight -= path_w;
-	                    constrains.getEdgeBySourceTarget(_constrains_t, _constrains_s).weight -= path_w;
-	
-	                    flow.getEdgeBySourceTarget(flow_s, flow_t).weight += path_w;
-	                    flow.getEdgeBySourceTarget(flow_t, flow_s).weight -= path_w;
-	                }
-	            }
-	        } else if (value.type === "end") {
-	            break;
-	        }
-	    }
-	    console.log("MAX FLOW");
-	    flow.edges.forEach(function (e) {
-	        console.log("Edge " + e.s.id + " -> " + e.t.id + ": " + e.weight);
-	    });
 	};
 
 /***/ }

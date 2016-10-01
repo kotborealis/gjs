@@ -1,7 +1,6 @@
 import * as BFS from './bfs';
 
 export const maxFlowFordFulkerson = function (graph, source, target){
-    throw new Error("WIP");
     const constrains = graph.clone();
     const flow = graph.clone();
 
@@ -13,47 +12,79 @@ export const maxFlowFordFulkerson = function (graph, source, target){
 
     flow.edges.forEach(edge => {edge.weight = 0;});
 
-    const bfs_gen = BFS.generator(constrains, constrains_source);
+    let path = findFlowEdgePath(graph, constrains_source, constrains_target);
+    while(path){
+        console.log("Found path");
+        console.log(path.map(e => e.s.id + ' ' + e.t.id).join(' -> '));
 
-    for(;;){
-        const value = bfs_gen.next().value;
-        if(value.type === "node"){
-            if(value.node === constrains_target){
-                const path = BFS.tracePath(constrains, constrains_source, constrains_target, value.trace);
-                let path_w = Number.POSITIVE_INFINITY;
+        const path_w = path.reduce((min_w, edge) => {
+            return Math.min(min_w, edge.weight);
+        }, Number.POSITIVE_INFINITY);
 
-                for(let i = 0; i < path.length - 1; i++){
-                    const constrains_s = constrains.nodesIndex.get(path[i].id);
-                    const constrains_t = constrains.nodesIndex.get(path[i+1].id);
+        console.log("Path w",path_w);
 
-                    const w = constrains.getEdgeBySourceTarget(constrains_s, constrains_t).weight;
-                    path_w = Math.min(path_w, w);
-                }
+        path.forEach(edge => {
+            const constrains_edge = constrains.edgesIndex.get(edge.id);
+            const flow_edge = flow.edgesIndex.get(edge.id);
 
-                if(path_w === 0)
-                    continue;
+            constrains_edge.weight -= path_w;
+            constrains_edge.meta.reverseEdge.weight += path_w;
 
-                for(let i = 0; i < path.length - 1; i++){
-                    const constrains_s = constrains.nodesIndex.get(path[i].id);
-                    const constrains_t = constrains.nodesIndex.get(path[i+1].id);
+            flow_edge.weight += path_w;
+            flow_edge.meta.reverseEdge.weight -= path_w;
+        });
 
-                    const flow_s = flow.nodesIndex.get(path[i].id);
-                    const flow_t = flow.nodesIndex.get(path[i+1].id);
+        console.log("constrains");
+        constrains.edges.forEach(e => {
+            console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
+        });
 
-                    constrains.getEdgeBySourceTarget(constrains_s, constrains_t).weight -= path_w;
-                    constrains.getEdgeBySourceTarget(constrains_t, constrains_s).weight -= path_w;
+        console.log("flow");
+        flow.edges.forEach(e => {
+            console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
+        });
 
-                    flow.getEdgeBySourceTarget(flow_s, flow_t).weight += path_w;
-                    flow.getEdgeBySourceTarget(flow_t, flow_s).weight -= path_w;
-                }
-            }
-        }
-        else if(value.type === "end"){
-            break;
-        }
+        path = findFlowEdgePath(graph, constrains_source, constrains_target);
     }
     console.log("MAX FLOW");
     flow.edges.forEach(e => {
         console.log(`Edge ${e.s.id} -> ${e.t.id}: ${e.weight}`);
     });
+};
+
+const findFlowEdgePath = function (graph, source, target){
+    const queue = [];
+    const trace = new Map();
+    const visited = new Set();
+
+    queue.push(source);
+    trace.set(source, null);
+
+    while(queue.length){
+        const node = queue.shift();
+        visited.add(node);
+        if(node === target){
+            return traceFlowEdgePath(graph, source, target, trace);
+        }
+        else {
+            for (let outEdge of node.meta.sourceOf) {
+                if (outEdge.weight !== 0 && !trace.has(outEdge) && !visited.has(outEdge.t)) {
+                    trace.set(outEdge.t, outEdge);
+                    queue.push(outEdge.t);
+                }
+            }
+        }
+    }
+
+    return null;
+};
+
+const traceFlowEdgePath = function(graph, source, target, trace){
+    const path = [trace.get(target)];
+    let node = trace.get(target).s;
+    while(trace.get(node)){
+        path.push(trace.get(node));
+        node = trace.get(node).s;
+    }
+    return path.reverse();
 };

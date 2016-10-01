@@ -61,7 +61,11 @@ export const Graph = function(){
     		weight: Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight),
     		render: {
     			state: ""
-    		}
+    		},
+            meta: {
+    		    reverseEdge: null,
+                multipleEdges: new Set()
+            }
     	};
 
     	edge_obj.s.meta.sourceOf.add(edge_obj);
@@ -74,9 +78,20 @@ export const Graph = function(){
         edge_obj.t.meta.reverseNeighbourEdges.add(edge_obj);
 
         if(!this.edgeBySourceTarget.get(edge_obj.s).has(edge_obj.t))
-    	    this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));
+            this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));
         else
             this.edgeBySourceTarget.get(edge_obj.s).get(edge_obj.t).add(edge_obj);
+
+        this.edges.forEach(_edge => {
+            if(_edge.s === edge_obj.t && _edge.t === edge_obj.s && !_edge.meta.reverseEdge){
+                _edge.meta.reverseEdge = edge_obj;
+                edge_obj.meta.reverseEdge = _edge;
+            }
+            else if(_edge.s === edge_obj.s && _edge.t === edge_obj.t){
+                _edge.meta.multipleEdges.add(edge_obj);
+                edge_obj.meta.multipleEdges.add(_edge);
+            }
+        });
 
       	this.edges.add(edge_obj);
       	this.edgesIndex.set(edge_obj.id, edge_obj);

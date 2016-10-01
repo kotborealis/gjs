@@ -19,27 +19,6 @@ export const generator = function* (graph, root) {
     yield {type: "end", trace};
 };
 
-export const pathGenerator = function* (graph, source, target) {
-    const queue = [];
-    const trace = new Map();
-
-    queue.push(source);
-    trace.set(source, null);
-
-    while(queue.length){
-        const node = queue.shift();
-        if(node === target){
-            yield {type: "path", path: tracePath(graph, source, target, trace)};
-        }
-        for(let child of node.meta.neighbourNodes){
-            if(!trace.has(child)){
-                trace.set(child, node);
-                queue.push(child);
-            }
-        }
-    }
-};
-
 export const tracePath = (graph, source, target, trace) => {
     const path = [target];
     let node = trace.get(target);
