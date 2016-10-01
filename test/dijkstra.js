@@ -18,7 +18,8 @@ describe('Dijkstra', () => {
                 {s:2,t:4,weight:15},
                 {s:4,t:5,weight:100},
                 {s:2,t:3,weight:10}]);
-            const path = Dijkstra.shortestPath(graph, graph.nodesIndex.get("2"), graph.nodesIndex.get("5"));
+            const path = Dijkstra.shortestPath(graph, graph.getNode(2), graph.getNode(5));
+            console.log(`Path: ${path.map(node => node.id).join(', ')}`);
             expect(path.map(node => node.id)).to.deep.equal([2, 3, 6, 5].map(i => i.toString()));
         });
     });

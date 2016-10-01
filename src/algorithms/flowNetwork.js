@@ -1,4 +1,4 @@
-export const maxFlowFordFulkerson = function (graph, source, target){
+export const FordFulkerson = function (graph, source, target){
 
     const flow = new Map();
     graph.edges.forEach(edge => {

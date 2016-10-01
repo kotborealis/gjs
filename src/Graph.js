@@ -100,6 +100,9 @@ export default function(){
       	this.edgesIndex.set(edge_obj.id, edge_obj);
     };
 
+    this.getNode = id => this.nodesIndex.get(id.toString());
+    this.getEdge = id => this.edgesIndex.get(id.toString());
+
     this.getEdgeBySourceTarget = (node_s, node_t) => {
         return this.edgeBySourceTarget.get(node_s).get(node_t).values().next().value;
     };

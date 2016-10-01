@@ -23,7 +23,8 @@ describe('BFS', () => {
                 {s: 5, t: 7},
                 {s: 6, t: 7}
                 ]);
-            const path = BFS.shortestPath(graph, graph.nodesIndex.get("3"), graph.nodesIndex.get("7"));
+            const path = BFS.shortestPath(graph, graph.getNode(3), graph.getNode(7));
+            console.log(`Path: ${path.map(node => node.id).join(', ')}`);
             expect(path.map(node => node.id)).to.deep.equal([3, 0, 4, 5, 7].map(i => i.toString()));
         });
     });
