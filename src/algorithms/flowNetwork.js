@@ -19,7 +19,12 @@ export const maxFlowFordFulkerson = function (graph, source, target){
         path = findFlowEdgePath(graph, flow, source, target);
     }
 
-    return flow;
+    const flow_w = Math.min(
+        [...source.meta.sourceOf].reduce((sum, edge) => sum + flow.get(edge), 0),
+        [...target.meta.targetOf].reduce((sum, edge) => sum + flow.get(edge), 0)
+    );
+
+    return {flow, w: flow_w};
 };
 
 const findFlowEdgePath = function (graph, flow, source, target){

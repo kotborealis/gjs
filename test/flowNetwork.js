@@ -24,7 +24,9 @@ describe('flowNetwork', () => {
                 {s: 2, t: 1, weight: 1},
             ]);
 
-            expect(getFlowArray(graph, 0, 3)).to.deep.equal([10,-10,10,-10,10,-10,10,-10,0,0].sort((l, r) => l > r));
+            const flow = calcFlow(graph, 0, 3);
+            expect(flow.flow).to.deep.equal([10,-10,10,-10,10,-10,10,-10,0,0].sort((l, r) => l > r));
+            expect(flow.w).to.equal(20);
         });
 
         it('should return max flow [2]', () => {
@@ -52,7 +54,9 @@ describe('flowNetwork', () => {
                 {s: 5, t: 4, weight: 3},
             ]);
 
-            expect(getFlowArray(graph, 0, 5)).to.deep.equal([3, -3, 2, -2, 0, 0, 3, -3, 2, -2, 1, -1, 2, -2, 3, -3].sort((l, r) => l > r));
+            const flow = calcFlow(graph, 0, 5);
+            expect(flow.flow).to.deep.equal([3, -3, 2, -2, 0, 0, 3, -3, 2, -2, 1, -1, 2, -2, 3, -3].sort((l, r) => l > r));
+            expect(flow.w).to.equal(5);
         });
 
         it('should return max flow [3]', () => {
@@ -78,17 +82,22 @@ describe('flowNetwork', () => {
                 {s: 3, t: 2, weight: 3}
             ]);
 
-            expect(getFlowArray(graph, 0, 3)).to.deep.equal([2,-2,3,-3,0,0,2,-2,0,0].sort((l, r) => l > r));
+            const flow = calcFlow(graph, 0, 3);
+            expect(flow.flow).to.deep.equal([2,-2,3,-3,0,0,2,-2,0,0].sort((l, r) => l > r));
+            expect(flow.w).to.equal(5);
         });
     });
 });
 
-const getFlowArray = (graph, s, t) => {
+const calcFlow = (graph, s, t) => {
     const flow = FlowNetwork.maxFlowFordFulkerson(graph, graph.nodesIndex.get(s.toString()), graph.nodesIndex.get(t.toString()));
-    flow.forEach((v,k) => {
+
+    flow.flow.forEach((v,k) => {
         console.log(`Edge ${k.s.id} -> ${k.t.id}, flow ${v}`);
     });
+    console.log("Flow capacity", flow.w);
+
     const flow_array = [];
-    flow.forEach(_ => flow_array.push(_));
-    return flow_array.sort((l, r) => l > r);
+    flow.flow.forEach(_ => flow_array.push(_));
+    return {flow: flow_array.sort((l, r) => l > r), w: flow.w};
 };
