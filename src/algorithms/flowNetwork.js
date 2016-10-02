@@ -19,10 +19,7 @@ export const FordFulkerson = function (graph, source, target){
         path = findFlowEdgePath(graph, flow, source, target);
     }
 
-    const capacity = Math.min(
-        [...source.meta.sourceOf].reduce((sum, edge) => sum + flow.get(edge), 0),
-        [...target.meta.targetOf].reduce((sum, edge) => sum + flow.get(edge), 0)
-    );
+    const capacity = [...source.meta.sourceOf].reduce((sum, edge) => sum + flow.get(edge), 0);
 
     return {flow, capacity};
 };
