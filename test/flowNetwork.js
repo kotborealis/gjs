@@ -128,6 +128,31 @@ describe('flowNetwork', () => {
             expect(flow.flow_array).to.deep.equal([2,-2,3,-3,2,-2,0,0,-3,3].sort((l, r) => l > r));
             expect(flow.capacity).to.equal(5);
         });
+
+        it('should return max flow [5]', () => {
+            const graph = new Graph();
+
+            graph.addNode([{}, {}, {}]);
+
+            graph.addEdge([
+                {s: 0, t: 1, weight: 1},
+                {s: 1, t: 0, weight: 2},
+                {s: 0, t: 2, weight: 3},
+                {s: 2, t: 0, weight: 2},
+                {s: 1, t: 2, weight: 2},
+                {s: 2, t: 1, weight: 2},
+            ]);
+
+            const flow = FordFulkersonHelper(graph, 0, 1);
+
+            flow.flow.forEach((v,k) => {
+                console.log(`Edge ${k.s.id} -> ${k.t.id}, flow ${v}`);
+            });
+            console.log("Flow capacity", flow.capacity);
+
+            expect(flow.flow_array).to.deep.equal([1, -1, 2, -2, 2, -2].sort((l, r) => l > r));
+            expect(flow.capacity).to.equal(3);
+        });
     });
 });
 
