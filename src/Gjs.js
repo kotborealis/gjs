@@ -13,11 +13,19 @@ module.exports.Gjs = function(canvas_selector) {
     const hEntities = { //highlighted entities
         nodes: {
             hover: null,
-            drag: null
+            drag: null,
+            createEdgeSource: null
         },
         edges: {
             hover: new Set()
         }
+    };
+
+    const clearHEntities = () => {
+        hEntities.nodes.hover = null;
+        hEntities.nodes.drag = null;
+        hEntities.nodes.createEdgeSource = null;
+        hEntities.edges.hover = new Set();
     };
 
     const getNodeByCoords = (x, y) => {
@@ -72,33 +80,62 @@ module.exports.Gjs = function(canvas_selector) {
         render.viewportOffset.y += dy;
     };
 
-    if(canvas) {
-        canvas.onmousemove = e => {
-            onNodeHover(getNodeByCoords(e.x, e.y));
-        };
+    canvas.onmousemove = (e) => {
+        onNodeHover(getNodeByCoords(e.x, e.y));
+    };
 
-        canvas.onmousedown = e => {
-            hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
-        };
+    canvas.ondblclick = (e) => {
+        const node = getNodeByCoords(e.x, e.y);
+        if(!node){
+            this.graph.addNode(render.toViewport(e.x, e.y));
+        }
+        else if(!hEntities.nodes.createEdgeSource){
+            hEntities.nodes.createEdgeSource = node;
+        }
+        else{
+            this.graph.addEdge({
+                s: hEntities.nodes.createEdgeSource.id,
+                t: node.id
+            });
+            hEntities.nodes.createEdgeSource = null;
+        }
+    };
 
-        canvas.onmouseup = () => {
-            hEntities.nodes.drag = null;
-        };
+    canvas.onmousedown = (e) => {
+        hEntities.nodes.drag = getNodeByCoords(e.x, e.y);
+    };
 
-        canvas.onclick = () => {
-        };
+    canvas.onmouseup = () => {
+        hEntities.nodes.drag = null;
+    };
 
-        canvas.ondrag = e => {
-            if (!hEntities.nodes.drag) {
-                onViewportDrag(e.dx / render.zoom(), e.dy / render.zoom());
-            }
-            else {
-                onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
-            }
-        };
+    canvas.onclick = (e) => {
 
-        canvas.onmousewheel = (e)=> {
-            render.zoom(e.deltaY);
-        };
-    }
+    };
+
+    canvas.ondrag = (e) => {
+        if (!hEntities.nodes.drag) {
+            onViewportDrag(e.dx, e.dy);
+        }
+        else {
+            onNodeDrag(hEntities.nodes.drag, e.dx / render.zoom(), e.dy / render.zoom());
+        }
+    };
+
+    canvas.onmousewheel = (e)=> {
+        render.zoom(e.deltaY);
+    };
+
+    //dat.gui
+    const gui = new dat.GUI();
+    const g = {
+        clear: () => {
+            this.graph = new Graph();
+            render.setGraph(this.graph);
+            clearHEntities();
+        }
+    };
+
+    gui.add(g, 'clear');
 };
+

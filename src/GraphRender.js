@@ -34,7 +34,7 @@ const config = {
 module.exports.Render = function(canvasManager, graph){
 	if(!(canvasManager instanceof CanvasManager))
 		throw new Error("First argument of GraphRender.Render must be CanvasManager instance");
-    if(!(graph instanceof Graph.Graph))
+    if(!(graph instanceof Graph))
 		throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
 
 	this.config = Object.assign({}, config);
@@ -175,6 +175,12 @@ module.exports.Render = function(canvasManager, graph){
             return zoomFactor;
         else
             zoomFactor = zoomFactor - dy / (2000 / zoomFactor);
+    };
+
+    this.setGraph = (new_graph) => {
+        if(!(new_graph instanceof Graph))
+            throw new Error("Second argument of GraphRender.Render must be Graph.Graph instance");
+        graph = new_graph;
     };
 
     render();

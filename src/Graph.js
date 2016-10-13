@@ -20,6 +20,9 @@ module.exports = function(){
     	if(this.nodesIndex.has(node.id.toString()))
     		throw new Error(`Node with id ${node.id.toString()} already exists`);
 
+        NODE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(node.id)) ?
+            NODE_ID_GEN_SEQ : Math.max(Number.parseInt(node.id) + 1, NODE_ID_GEN_SEQ);
+
     	const node_obj = {
     		id: node.id.toString(),
     		render: {
@@ -56,6 +59,9 @@ module.exports = function(){
     		throw new Error(`Edge must have source and target`);
         if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
             throw new Error(`Edge target/source node does not exists`);
+
+        EDGE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(edge.id)) ?
+            EDGE_ID_GEN_SEQ : Math.max(Number.parseInt(edge.id) + 1, EDGE_ID_GEN_SEQ);
 
     	const edge_obj = {
     		id: edge.id.toString(),

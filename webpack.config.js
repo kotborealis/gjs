@@ -3,7 +3,7 @@ module.exports = {
     context: path.resolve("./src/"),
     entry: ['babel-polyfill', './main.js'],
     output: {
-        path: __dirname+"/build",
+        path: "public",
         filename: "bundle.js"
     },
     module: {
