@@ -9,7 +9,7 @@ const generator = function* (graph, root) {
         const node = queue.shift();
         yield {type: "node", trace, node};
         for(let child of node.meta.neighbourNodes){
-            yield {type: "child", trace, child};
+            yield {type: "child", trace, child, node};
             if(!trace.has(child)){
                 trace.set(child, node);
                 queue.push(child);
