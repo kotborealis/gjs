@@ -1,4 +1,4 @@
-export const loadJSONFromURL = (url, callback) => {
+module.exports.loadJSONFromURL = (url, callback) => {
     var _ = new XMLHttpRequest();
     _.overrideMimeType("application/json");
     _.open('GET', url, true);
@@ -10,7 +10,7 @@ export const loadJSONFromURL = (url, callback) => {
     _.send(null);
 };
 
-export const generateString = l => {
+module.exports.generateString = l => {
     let r = "";
     while (l--)
         r += String.fromCharCode(((Math.random() * 25) >> 0) + 65);

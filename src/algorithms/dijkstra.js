@@ -1,4 +1,4 @@
-export const generator = function* (graph, root) {
+const generator = function* (graph, root) {
     const visited = new Set();
     const trace = new Map();
     const queue = [];
@@ -46,7 +46,7 @@ export const generator = function* (graph, root) {
     yield {type: "end", trace};
 };
 
-export const tracePath = (graph, source, target, trace) => {
+const tracePath = (graph, source, target, trace) => {
     let node = target;
     const path = [];
     path.push(target);
@@ -59,7 +59,7 @@ export const tracePath = (graph, source, target, trace) => {
     return path.reverse();
 };
 
-export const shortestPath = (graph, source, target) => {
+const shortestPath = (graph, source, target) => {
     const gen = generator(graph, source, target);
     for(;;){
         const value = gen.next().value;
@@ -71,3 +71,5 @@ export const shortestPath = (graph, source, target) => {
         }
     }
 };
+
+module.exports = {generator, shortestPath, tracePath};

@@ -1,10 +1,10 @@
 "use strict";
 
-import * as Graph from './Graph';
-import CanvasManager from './CanvasManager';
-import * as GraphRender from './GraphRender';
+const Graph = require('./Graph');
+const CanvasManager = require('./CanvasManager');
+const GraphRender = require('./GraphRender');
 
-export const Gjs = function(canvas_selector) {
+module.exports.Gjs = function(canvas_selector) {
     this.graph = new Graph();
 
     const canvas = new CanvasManager(canvas_selector, {fullscreen: true, enableDrag: true});

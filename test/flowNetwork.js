@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 
-import Graph from '../src/Graph';
-import * as FlowNetwork from '../src/algorithms/flowNetwork';
+const Graph = require('../src/Graph');
+const FlowNetwork = require('../src/algorithms/flowNetwork');
 
 describe('flowNetwork', () => {
     describe('FordFulkerson', () => {

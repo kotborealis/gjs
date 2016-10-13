@@ -1,5 +1,4 @@
-import * as Gjs from './Gjs';
-import * as Flow from './algorithms/flowNetwork';
+const Gjs = require('./Gjs');
 
 const gjs = new Gjs.Gjs("#gcanvas");
 

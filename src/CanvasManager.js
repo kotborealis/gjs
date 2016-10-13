@@ -5,7 +5,7 @@
  * @param options - Options (fullscreen,width,height,enableDrag)
  * @constructor
  */
-export default function(canvas,options={}){
+module.exports = function(canvas,options={}){
     if(canvas===undefined)
         throw new Error("CanvasManager first argument must be canvas element or selector");
     if(options===undefined)
@@ -31,8 +31,8 @@ export default function(canvas,options={}){
     else
         this.e_canvas=canvas;
 
-    this.e_canvas.width=options.width;
-    this.e_canvas.height=options.height;
+    this.e_canvas.width = options.width;
+    this.e_canvas.height = options.height;
     this.ctx = this.e_canvas.getContext("2d");
     this.canvas={};
 
@@ -40,15 +40,9 @@ export default function(canvas,options={}){
         if(options.fullscreen) {
             this.e_canvas.width = window.innerWidth;
             this.e_canvas.height = window.innerHeight;
-            this.width = this.e_canvas.width;
-            this.height = this.e_canvas.width;
         }
-        else{
-            this.e_canvas.width=options.width;
-            this.e_canvas.height=options.height;
-            this.width = this.e_canvas.width;
-            this.height = this.e_canvas.width;
-        }
+        this.width = this.e_canvas.width;
+        this.height = this.e_canvas.height;
         this.clear();
         this.onresize();
     };
@@ -170,4 +164,4 @@ export default function(canvas,options={}){
         get: ()=>options.fullscreen,
         set: (v)=>{options.fullscreen=v;window.onresize();}
     });
-}
+};

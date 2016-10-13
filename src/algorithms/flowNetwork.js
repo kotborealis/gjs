@@ -1,4 +1,4 @@
-export const FordFulkerson = function (graph, source, target){
+const FordFulkerson = function (graph, source, target){
 
     const flow = new Map();
     graph.edges.forEach(edge => {
@@ -58,3 +58,5 @@ const traceFlowEdgePath = function(source, target, trace){
     }
     return path.reverse();
 };
+
+module.exports = {FordFulkerson};

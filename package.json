@@ -19,7 +19,7 @@
     "webpack": "^1.13.0"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register --require babel-polyfill"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

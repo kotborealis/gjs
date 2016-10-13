@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 
-import Graph from '../src/Graph';
-import * as Dijkstra from '../src/algorithms/dijkstra';
+const Graph = require('../src/Graph');
+const Dijkstra = require('../src/algorithms/dijkstra');
 
 describe('Dijkstra', () => {
     describe('shortestPath', () => {

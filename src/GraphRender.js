@@ -1,5 +1,5 @@
-import CanvasManager from './CanvasManager';
-import * as Graph from './Graph';
+const CanvasManager = require('./CanvasManager');
+const Graph = require('./Graph');
 
 const config = {
 	viewport: {x: -400, y: -400},
@@ -31,7 +31,7 @@ const config = {
 	edgeArrow: {x: 6, y: 4}
 };
 
-export const Render = function(canvasManager, graph){
+module.exports.Render = function(canvasManager, graph){
 	if(!(canvasManager instanceof CanvasManager))
 		throw new Error("First argument of GraphRender.Render must be CanvasManager instance");
     if(!(graph instanceof Graph.Graph))

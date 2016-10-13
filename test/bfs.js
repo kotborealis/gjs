@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 
-import Graph from '../src/Graph';
-import * as BFS from '../src/algorithms/bfs';
+const Graph = require('../src/Graph');
+const BFS = require('../src/algorithms/bfs');
 
 describe('BFS', () => {
     describe('shortestPath', () => {
