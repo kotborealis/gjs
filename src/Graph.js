@@ -11,7 +11,7 @@ module.exports = function(){
 	this.edgeBySourceTarget = new Map();
 
     this.addNode = node => {
-    	Array.isArray(node) ? node.forEach(addNodeHelper) : addNodeHelper(node);
+    	return Array.isArray(node) ? node.map(addNodeHelper) : addNodeHelper(node);
     };
 
     const addNodeHelper = node => {
@@ -44,21 +44,23 @@ module.exports = function(){
 
     	this.nodes.add(node_obj);
     	this.nodesIndex.set(node_obj.id, node_obj);
+
+        return node_obj;
     };
 
     this.addEdge = edge => {
-    	Array.isArray(edge) ? edge.forEach(addEdgeHelper) : addEdgeHelper(edge);
+    	return Array.isArray(edge) ? edge.map(addEdgeHelper) : addEdgeHelper(edge);
     };
 
     const addEdgeHelper = edge => {
     	if(edge.id === undefined)
     		edge.id = EDGE_ID_GEN_SEQ++;
-    	if(this.edgesIndex.has(edge.id.toString()))
-    		throw new Error(`Edge already exists`);
+        if(this.edgesIndex.has(edge.id.toString()))
+            throw new Error(`Edge already exists`);
     	if(edge.s === undefined  || edge.t === undefined)
     		throw new Error(`Edge must have source and target`);
         if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
-            throw new Error(`Edge target/source node does not exists`);
+            throw new Error(`Edge target/source (${edge.s.toString()}/${edge.t.toString()}) node does not exists`);
 
         EDGE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(edge.id)) ?
             EDGE_ID_GEN_SEQ : Math.max(Number.parseInt(edge.id) + 1, EDGE_ID_GEN_SEQ);
@@ -104,6 +106,8 @@ module.exports = function(){
 
       	this.edges.add(edge_obj);
       	this.edgesIndex.set(edge_obj.id, edge_obj);
+
+        return edge_obj;
     };
 
     this.getNode = id => this.nodesIndex.get(id.toString());
@@ -115,5 +119,33 @@ module.exports = function(){
 
     this.getEdgeSetBySourceTarget = (node_s, node_t) => {
         return this.edgeBySourceTarget.get(node_s).get(node_t);
+    };
+
+    this.export = () => {
+        const nodes = [];
+        this.nodes.forEach(node => {
+            nodes.push({
+                id: node.id,
+                x: node.render.x,
+                y: node.render.y
+            });
+        });
+
+        const edges = [];
+        this.edges.forEach(edge => {
+            edges.push({
+                id: edge.id,
+                s: edge.s.id,
+                t: edge.t.id,
+                weight: edge.weight
+            });
+        });
+
+        return {nodes, edges};
+    };
+
+    this.import = (data) => {
+        this.addNode(data.nodes);
+        this.addEdge(data.edges);
     };
 };

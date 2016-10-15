@@ -59,4 +59,4 @@ const traceFlowEdgePath = function(source, target, trace){
     return path.reverse();
 };
 
-module.exports = {FordFulkerson};
+module.exports = {FordFulkerson, findFlowEdgePath, traceFlowEdgePath};
