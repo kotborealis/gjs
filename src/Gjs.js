@@ -126,9 +126,7 @@ module.exports.Gjs = function(canvas_selector) {
         render.zoom(e.deltaY);
     };
 
-    //dat.gui
-    const gui = new dat.GUI();
-    const g = {
+    const gjs_interface = {
         clear: () => {
             this.graph = new Graph();
             render.setGraph(this.graph);
@@ -138,7 +136,7 @@ module.exports.Gjs = function(canvas_selector) {
             window.prompt("Graph JSON:", JSON.stringify(this.graph.export()));
         },
         import: () => {
-            g.clear();
+            gjs_interface.clear();
             const imp = window.prompt("Graph JSON:", JSON.stringify({nodes:[],edges:[]}));
             try{
                 this.graph.import(JSON.parse(imp));
@@ -146,11 +144,54 @@ module.exports.Gjs = function(canvas_selector) {
             catch(e){
                 alert("Invalid Graph JSON! "+e.toString());
             }
+        },
+        export_to_file: () => {
+            if(!window.hasOwnProperty('saveAs')){
+                console.log('It seems that you don\'t have FileSaver (saveAs) loaded.');
+                console.log('But, you can use export and manually save the result to file.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(this.graph.export())], {type: "application/json;charset=utf-8"});
+            saveAs(blob, `graph_${Date.now()}_${this.graph.nodes.size}n_${this.graph.edges.size}e.gjs.json`);
+        },
+        import_from_file: () => {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(!file){
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        gjs_interface.clear();
+                        this.graph.import(JSON.parse(e.target.result));
+                    }
+                    catch(e){
+                        alert("Invalid Graph JSON! "+e.toString());
+                    }
+                };
+                reader.readAsText(file);
+            }, false);
+            input.click();
         }
     };
 
-    gui.add(g, 'clear');
-    gui.add(g, 'export');
-    gui.add(g, 'import');
+    window.gjs_interface = gjs_interface;
+
+    if(window.hasOwnProperty('dat') && dat.GUI) {
+        const gui = new dat.GUI();
+        gui.add(gjs_interface, 'clear');
+        gui.add(gjs_interface, 'export');
+        gui.add(gjs_interface, 'export_to_file');
+        gui.add(gjs_interface, 'import');
+        gui.add(gjs_interface, 'import_from_file');
+    }
+    else{
+        console.log('It seems that you don\'t have dat.gui loaded.');
+        console.log('But, you can use window.gjs_interface');
+        console.log('gjs_interface:',['clear', 'export', 'export_to_file', 'import', 'import_from_file']);
+    }
 };
 
