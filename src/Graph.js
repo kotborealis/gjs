@@ -55,8 +55,8 @@ module.exports = function(){
     const addEdgeHelper = edge => {
     	if(edge.id === undefined)
     		edge.id = EDGE_ID_GEN_SEQ++;
-    	if(this.edgesIndex.has(edge.id.toString()))
-    		throw new Error(`Edge already exists`);
+        if(this.edgesIndex.has(edge.id.toString()))
+            throw new Error(`Edge already exists`);
     	if(edge.s === undefined  || edge.t === undefined)
     		throw new Error(`Edge must have source and target`);
         if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
@@ -124,14 +124,28 @@ module.exports = function(){
     this.export = () => {
         const nodes = [];
         this.nodes.forEach(node => {
-            nodes.push({id: node.id});
+            nodes.push({
+                id: node.id,
+                x: node.render.x,
+                y: node.render.y
+            });
         });
 
         const edges = [];
         this.edges.forEach(edge => {
-            edges.push({id: edge.id, s: edge.s.id, t: edge.t.id, weight: edge.weight});
+            edges.push({
+                id: edge.id,
+                s: edge.s.id,
+                t: edge.t.id,
+                weight: edge.weight
+            });
         });
 
         return {nodes, edges};
+    };
+
+    this.import = (data) => {
+        this.addNode(data.nodes);
+        this.addEdge(data.edges);
     };
 };

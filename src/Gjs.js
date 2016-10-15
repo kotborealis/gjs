@@ -133,9 +133,24 @@ module.exports.Gjs = function(canvas_selector) {
             this.graph = new Graph();
             render.setGraph(this.graph);
             clearHEntities();
+        },
+        export: () => {
+            window.prompt("Graph JSON:", JSON.stringify(this.graph.export()));
+        },
+        import: () => {
+            g.clear();
+            const imp = window.prompt("Graph JSON:", JSON.stringify({nodes:[],edges:[]}));
+            try{
+                this.graph.import(JSON.parse(imp));
+            }
+            catch(e){
+                alert("Invalid Graph JSON! "+e.toString());
+            }
         }
     };
 
     gui.add(g, 'clear');
+    gui.add(g, 'export');
+    gui.add(g, 'import');
 };
 
