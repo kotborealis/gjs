@@ -60,7 +60,7 @@ module.exports = function(){
     	if(edge.s === undefined  || edge.t === undefined)
     		throw new Error(`Edge must have source and target`);
         if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
-            throw new Error(`Edge target/source node does not exists`);
+            throw new Error(`Edge target/source (${edge.s.toString()}/${edge.t.toString()}) node does not exists`);
 
         EDGE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(edge.id)) ?
             EDGE_ID_GEN_SEQ : Math.max(Number.parseInt(edge.id) + 1, EDGE_ID_GEN_SEQ);
@@ -119,5 +119,19 @@ module.exports = function(){
 
     this.getEdgeSetBySourceTarget = (node_s, node_t) => {
         return this.edgeBySourceTarget.get(node_s).get(node_t);
+    };
+
+    this.export = () => {
+        const nodes = [];
+        this.nodes.forEach(node => {
+            nodes.push({id: node.id});
+        });
+
+        const edges = [];
+        this.edges.forEach(edge => {
+            edges.push({id: edge.id, s: edge.s.id, t: edge.t.id, weight: edge.weight});
+        });
+
+        return {nodes, edges};
     };
 };
