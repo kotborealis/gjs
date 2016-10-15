@@ -11,7 +11,7 @@ module.exports = function(){
 	this.edgeBySourceTarget = new Map();
 
     this.addNode = node => {
-    	Array.isArray(node) ? node.forEach(addNodeHelper) : addNodeHelper(node);
+    	return Array.isArray(node) ? node.map(addNodeHelper) : addNodeHelper(node);
     };
 
     const addNodeHelper = node => {
@@ -44,10 +44,12 @@ module.exports = function(){
 
     	this.nodes.add(node_obj);
     	this.nodesIndex.set(node_obj.id, node_obj);
+
+        return node_obj;
     };
 
     this.addEdge = edge => {
-    	Array.isArray(edge) ? edge.forEach(addEdgeHelper) : addEdgeHelper(edge);
+    	return Array.isArray(edge) ? edge.map(addEdgeHelper) : addEdgeHelper(edge);
     };
 
     const addEdgeHelper = edge => {
@@ -104,6 +106,8 @@ module.exports = function(){
 
       	this.edges.add(edge_obj);
       	this.edgesIndex.set(edge_obj.id, edge_obj);
+
+        return edge_obj;
     };
 
     this.getNode = id => this.nodesIndex.get(id.toString());
