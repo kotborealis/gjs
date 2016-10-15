@@ -1,5 +1,5 @@
 const Graph = require('../../../src/Graph');
-const Bipartite = require('../../../src/algorithms/bipartite');
+const FlowNetwork = require('../../../src/algorithms/flowNetwork');
 
 const readline = require('readline-sync');
 readline.setDefaultOptions({prompt: ''});
@@ -25,5 +25,6 @@ for(let i = 0; i < nodes_count; i++){
             });
     });
 }
+console.log(JSON.stringify(graph.export()));
 
-console.log(Bipartite.isBipartite(graph) ? 'YES' : 'NO');
+console.log(FlowNetwork.FordFulkerson(graph, graph.getNode(0), graph.getNode(1)).capacity);
