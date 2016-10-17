@@ -1,13 +1,13 @@
 const Graph = require('../../../src/Graph');
-const FlowNetwork = require('../../../src/algorithms/flowNetwork');
+const BFS = require('../../../src/algorithms/bfs');
 
-const readline = require('readline-sync');
-readline.setDefaultOptions({prompt: ''});
+const filename = process.argv[2];
+const lines = require('fs').readFileSync(filename).toString().split('\n');
 let line;
 
 const graph = new Graph();
 
-line = readline.prompt();
+line = lines[0];
 
 const nodes_count = Number.parseInt(line.split(' ')[0]);
 for(let i = 0; i < nodes_count; i++){
@@ -15,7 +15,7 @@ for(let i = 0; i < nodes_count; i++){
 }
 
 for(let i = 0; i < nodes_count; i++){
-    line = readline.prompt();
+    line = lines[i + 1];
     line.split(' ').forEach((capacity, j) => {
         if(Number.parseInt(capacity))
             graph.addEdge({
@@ -26,4 +26,8 @@ for(let i = 0; i < nodes_count; i++){
     });
 }
 
-console.log(FlowNetwork.FordFulkerson(graph, graph.getNode(0), graph.getNode(1)).capacity);
+let max_w = 0;
+
+
+
+process.stdout.write(max_w.toString());
