@@ -15,7 +15,7 @@ fs.readdirSync(test_dir).map(file=>{
     else{
         var m = file.match(/^(.*)\.out$/);
         if(m!==null){
-            tests_out[m[1]+".in"]=fs.readFileSync(test_dir+file).toString().replace("\n","");
+            tests_out[m[1]+".in"]=fs.readFileSync(test_dir+file).toString().replace('\n','').replace('\r','');
         }
     }
 });
@@ -23,7 +23,7 @@ fs.readdirSync(test_dir).map(file=>{
 function loop(n){
     test = tests_in[n];
     var output="";
-    output+="\033[36m"
+    output+="\033[36m";
     output+=' '.repeat(15).substr(0,15-test.length);
     output+=test;
     output+='...';
@@ -35,10 +35,9 @@ function loop(n){
         var out = stdout.split("\n");
         var r = {
             name:test,
-            time:out.length>=2?Number.parseFloat(out[0].slice(0,-2)):null,
+            time:out.length>=2?out[0]:null,
             passed:out.length>=2?out[1]===tests_out[test]:out[0]===tests_out[test]
         };
-        console.log("got: "+out,"expected: "+tests_out[test]);
         if(r.passed)tests_ok.push(test);
         else        tests_er.push(test);
         var output="";
