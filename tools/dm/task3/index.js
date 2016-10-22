@@ -1,3 +1,4 @@
+console.time("Run");
 const Graph = require('../../../src/Graph');
 const FlowNetwork = require('../../../src/algorithms/flowNetwork');
 
@@ -26,4 +27,5 @@ for(let i = 0; i < nodes_count; i++){
 }
 
 const flow = FlowNetwork.FordFulkerson(graph, graph.getNode(0), graph.getNode(1));
+console.timeEnd("Run");
 process.stdout.write(flow.capacity.toString());

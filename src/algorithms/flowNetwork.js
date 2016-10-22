@@ -1,5 +1,4 @@
 const FordFulkerson = function (graph, source, target){
-
     const flow = new Map();
     graph.edges.forEach(edge => {
         flow.set(edge, 0);
@@ -26,22 +25,21 @@ const FordFulkerson = function (graph, source, target){
 
 const findFlowEdgePath = function (graph, flow, source, target){
     const queue = [];
-    const trace = new Map();
-    const visited = new Set();
+    const trace = {};
+    const visited = {};
 
     queue.push(source);
-    trace.set(source, null);
 
     while(queue.length){
         const node = queue.shift();
-        visited.add(node);
+        visited[node.id] = true;
         for (let childEdge of node.meta.sourceOf) {
-            if (childEdge.weight - flow.get(childEdge) > 0 && !trace.has(childEdge) && !visited.has(childEdge.t)) {
-                trace.set(childEdge.t, childEdge);
-                queue.push(childEdge.t);
+            if (visited[childEdge.t.id]!==true && childEdge.weight - flow.get(childEdge) > 0 && !trace[childEdge.id]) {
+                trace[childEdge.t.id] = childEdge.id;
                 if(childEdge.t === target){
-                    return traceFlowEdgePath(source, target, trace);
+                    return traceFlowEdgePath(graph, source, target, trace);
                 }
+                queue.push(childEdge.t);
             }
         }
     }
@@ -49,14 +47,15 @@ const findFlowEdgePath = function (graph, flow, source, target){
     return null;
 };
 
-const traceFlowEdgePath = function(source, target, trace){
-    const path = [trace.get(target)];
-    let node = trace.get(target).s;
-    while(trace.get(node)){
-        path.push(trace.get(node));
-        node = trace.get(node).s;
+const traceFlowEdgePath = function(graph, source, target, trace){
+    const path = [graph.getEdge(trace[target.id])];
+    let node = graph.getEdge(trace[target.id]).s;
+    while(trace[node.id]){
+        const _ = trace[node.id];
+        path.push(graph.getEdge(_));
+        node = graph.getEdge(_).s;
     }
-    return path.reverse();
+    return path;
 };
 
 module.exports = {FordFulkerson, findFlowEdgePath, traceFlowEdgePath};
