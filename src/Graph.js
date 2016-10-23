@@ -10,6 +10,9 @@ module.exports = function(){
 
 	this.edgeBySourceTarget = new Map();
 
+    const __node_constructor = function(){};
+    const __edge_constructor = function(){};
+
     this.addNode = node => {
     	return Array.isArray(node) ? node.map(addNodeHelper) : addNodeHelper(node);
     };
@@ -23,22 +26,21 @@ module.exports = function(){
         NODE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(node.id)) ?
             NODE_ID_GEN_SEQ : Math.max(Number.parseInt(node.id) + 1, NODE_ID_GEN_SEQ);
 
-    	const node_obj = {
-    		id: node.id.toString(),
-    		render: {
-    			x: node.x || 0,
-    			y: node.y || 0,
-    			state: ""
-    		},
-    		meta: {
-    			targetOf: new Set(),
-    			sourceOf: new Set(),
-    			neighbourNodes: new Set(),
-                reverseNeighbourNodes: new Set(),
-    			neighbourEdges: new Set(),
-                reverseNeighbourEdges: new Set()
-    		}
-    	};
+    	const node_obj = new __node_constructor();
+        node_obj.id = node.id.toString();
+        node_obj.render = {
+            x: node.x || 0,
+            y: node.y || 0,
+            state: ""
+        };
+        node_obj.meta = {
+            targetOf: new Set(),
+            sourceOf: new Set(),
+            neighbourNodes: new Set(),
+            reverseNeighbourNodes: new Set(),
+            neighbourEdges: new Set(),
+            reverseNeighbourEdges: new Set()
+        };
 
     	this.edgeBySourceTarget.set(node_obj, new Map());
 
@@ -59,25 +61,26 @@ module.exports = function(){
             throw new Error(`Edge already exists`);
     	if(edge.s === undefined  || edge.t === undefined)
     		throw new Error(`Edge must have source and target`);
-        if(!this.nodesIndex.has(edge.s.toString()) || !this.nodesIndex.has(edge.t.toString()))
+        if((!(edge.s instanceof __node_constructor) && !this.nodesIndex.has(edge.s.toString()))
+            || (!(edge.t instanceof __node_constructor) && !this.nodesIndex.has(edge.t.toString())))
             throw new Error(`Edge target/source (${edge.s.toString()}/${edge.t.toString()}) node does not exists`);
 
         EDGE_ID_GEN_SEQ = Number.isNaN(Number.parseInt(edge.id)) ?
             EDGE_ID_GEN_SEQ : Math.max(Number.parseInt(edge.id) + 1, EDGE_ID_GEN_SEQ);
 
-    	const edge_obj = {
-    		id: edge.id.toString(),
-    		s: this.nodesIndex.get(edge.s.toString()),
-    		t: this.nodesIndex.get(edge.t.toString()),
-    		weight: Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight),
-    		render: {
-    			state: ""
-    		},
-            meta: {
-    		    reverseEdge: null,
-                multipleEdges: new Set()
-            }
-    	};
+    	const edge_obj = new __edge_constructor();
+
+    	edge_obj.id = edge.id.toString();
+        edge_obj.s = edge.s instanceof __node_constructor ? edge.s : this.nodesIndex.get(edge.s.toString());
+        edge_obj.t = edge.t instanceof __node_constructor ? edge.t : this.nodesIndex.get(edge.t.toString());
+        edge_obj.weight = Number.isNaN(Number(edge.weight)) ? Number.POSITIVE_INFINITY : Number(edge.weight);
+        edge_obj.render = {
+            state: ""
+        };
+        edge_obj.meta = {
+            reverseEdge: null,
+            multipleEdges: new Set()
+        };
 
     	edge_obj.s.meta.sourceOf.add(edge_obj);
     	edge_obj.t.meta.targetOf.add(edge_obj);
