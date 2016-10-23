@@ -18,6 +18,8 @@ module.exports = function(){
     };
 
     const addNodeHelper = node => {
+        if(!node)
+            node = {};
     	if(node.id === undefined)
             node.id = NODE_ID_GEN_SEQ++;
     	if(this.nodesIndex.has(node.id.toString()))
