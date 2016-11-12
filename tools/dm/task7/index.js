@@ -7,12 +7,9 @@ let line;
 const graph = new Graph();
 
 line = lines[0];
+const [nodes_left_count, nodes_right_count] = line.split(' ').map(i => Number.parseInt(i));
 
-const nodes_left_count = Number.parseInt(line.split(' ')[0]);
-const nodes_right_count = Number.parseInt(line.split(' ')[1]);
-
-const super_s = graph.addNode({id: 'super_s'});
-const super_t = graph.addNode({id: 'super_t'});
+const [super_s, super_t] = graph.addNode([{}, {}]);
 
 for(let i = 0; i < nodes_left_count; i++){
     graph.addEdge({
@@ -31,30 +28,22 @@ for(let i = 0; i < nodes_right_count; i++){
 
 for(let i = 0; i < nodes_left_count; i++){
     line = lines[1 + i];
-    const _ = line.split(' ').filter(i=>i);
-    if(Number.parseInt(_.shift()) > 0) {
-        _.forEach(edgeTo => {
-            graph.addEdge({
-                s: i + 'l',
-                t: Number.parseInt(edgeTo) + 'r',
-                weight: 1
-            });
-            graph.addEdge({
-                s: Number.parseInt(edgeTo) + 'r',
-                t: i + 'l',
-                weight: 0
-            });
-        });
-    }
+    const _ = line.split(' ').filter(i=>i).map(i => Number.parseInt(i));
+    if(!_.shift())
+        continue;
+    _.forEach(edgeTo => {
+        graph.addEdge([{
+            s: i + 'l',
+            t: edgeTo + 'r',
+            weight: 1
+        }, {
+            s: edgeTo + 'r',
+            t: i + 'l',
+            weight: 0
+        }]);
+    });
 }
 
 const flow = FlowNetwork.FordFulkerson(graph, super_s, super_t);
 
-let max_matching_edges_count = 0;
-flow.flow.forEach((value, edge) => {
-    if(edge && value && edge.s.id.toString().indexOf('l') >= 0 && edge.t.id.toString().indexOf('r') >= 0){
-        max_matching_edges_count++;
-    }
-});
-
-process.stdout.write(max_matching_edges_count.toString());
+process.stdout.write(flow.capacity.toString());

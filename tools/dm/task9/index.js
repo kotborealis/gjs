@@ -9,8 +9,7 @@ const graph = new Graph();
 const nodes_left_count = lines[1].split('').length;
 const nodes_right_count = Number.parseInt(lines[0]);
 
-const super_s = graph.addNode();
-const super_t = graph.addNode();
+const [super_s, super_t] = graph.addNode([{}, {}]);
 
 const word = lines[1].split('');
 const cube_values = new Map();
