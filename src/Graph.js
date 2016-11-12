@@ -80,9 +80,18 @@ module.exports = function(){
             state: ""
         };
         edge_obj.meta = {
-            reverseEdge: null,
-            multipleEdges: new Set()
+            reverseEdge: null
         };
+        const reverse_edges = this.getEdgeSetBySourceTarget(edge_obj.t, edge_obj.s);
+        if(reverse_edges) {
+            for(let _edge of reverse_edges) {
+                if(_edge.meta.reverseEdge === null) {
+                    edge_obj.meta.reverseEdge = _edge;
+                    _edge.meta.reverseEdge = edge_obj;
+                    break;
+                }
+            }
+        }
 
     	edge_obj.s.meta.sourceOf.add(edge_obj);
     	edge_obj.t.meta.targetOf.add(edge_obj);
@@ -97,17 +106,6 @@ module.exports = function(){
             this.edgeBySourceTarget.get(edge_obj.s).set(edge_obj.t, new Set([edge_obj]));
         else
             this.edgeBySourceTarget.get(edge_obj.s).get(edge_obj.t).add(edge_obj);
-
-        this.edges.forEach(_edge => {
-            if(_edge.s === edge_obj.t && _edge.t === edge_obj.s && !_edge.meta.reverseEdge){
-                _edge.meta.reverseEdge = edge_obj;
-                edge_obj.meta.reverseEdge = _edge;
-            }
-            else if(_edge.s === edge_obj.s && _edge.t === edge_obj.t){
-                _edge.meta.multipleEdges.add(edge_obj);
-                edge_obj.meta.multipleEdges.add(_edge);
-            }
-        });
 
       	this.edges.add(edge_obj);
       	this.edgesIndex.set(edge_obj.id, edge_obj);
