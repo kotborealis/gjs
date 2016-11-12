@@ -1,13 +1,12 @@
 const Graph = require('../../../src/Graph');
 const FlowNetwork = require('../../../src/algorithms/flowNetwork');
 
-const readline = require('readline-sync');
-readline.setDefaultOptions({prompt: ''});
+const lines = require('fs').readFileSync(process.argv[2]).toString().split('\n').map(i=>i.replace(/[\r\n]/, ''));
 let line;
 
 const graph = new Graph();
 
-line = readline.prompt();
+line = lines[0];
 
 const nodes_left_count = Number.parseInt(line.split(' ')[0]);
 const nodes_right_count = Number.parseInt(line.split(' ')[1]);
@@ -31,9 +30,10 @@ for(let i = 0; i < nodes_right_count; i++){
 }
 
 for(let i = 0; i < nodes_left_count; i++){
-    line = readline.prompt();
-    if(line.length)
-        line.split(' ').forEach(edgeTo => {
+    line = lines[1 + i];
+    const _ = line.split(' ').filter(i=>i);
+    if(Number.parseInt(_.shift()) > 0) {
+        _.forEach(edgeTo => {
             graph.addEdge({
                 s: i + 'l',
                 t: Number.parseInt(edgeTo) + 'r',
@@ -42,18 +42,19 @@ for(let i = 0; i < nodes_left_count; i++){
             graph.addEdge({
                 s: Number.parseInt(edgeTo) + 'r',
                 t: i + 'l',
-                weight: 1
+                weight: 0
             });
         });
+    }
 }
 
 const flow = FlowNetwork.FordFulkerson(graph, super_s, super_t);
 
 let max_matching_edges_count = 0;
 flow.flow.forEach((value, edge) => {
-    if(edge && value === 1 && edge.s !== super_s && edge.t !== super_t) {
+    if(edge && value && edge.s.id.toString().indexOf('l') >= 0 && edge.t.id.toString().indexOf('r') >= 0){
         max_matching_edges_count++;
     }
 });
 
-console.log(max_matching_edges_count);
+process.stdout.write(max_matching_edges_count.toString());
