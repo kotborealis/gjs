@@ -6,38 +6,36 @@ let line;
 
 const graph = new Graph();
 
-const nodes_right_count = Number.parseInt(lines[0]);
 const nodes_left_count = lines[1].split('').length;
+const nodes_right_count = Number.parseInt(lines[0]);
 
-const super_s = graph.addNode({id: 'super_s'});
-const super_t = graph.addNode({id: 'super_t'});
+const super_s = graph.addNode();
+const super_t = graph.addNode();
 
-const desired_word = lines[1].split('');
-const right_node_to_value = new Map();
+const word = lines[1].split('');
+const cube_values = new Map();
+
+for(let i = 0; i < nodes_left_count; i++){
+    graph.addEdge({
+        s: super_s,
+        t: graph.addNode({id: i+"l"}),
+        weight: 1
+    });
+}
 
 for(let i = 0; i < nodes_right_count; i++){
     line = lines[2 + i];
-    const _ = graph.addNode({id: i+"r"});
     graph.addEdge({
-        s: _,
+        s: graph.addNode({id: i+"r"}),
         t: super_t,
         weight: 1
     });
-    right_node_to_value.set(_.id, line.split(''));
-}
-
-for(let i = 0; i < nodes_left_count; i++){
-    const _ = graph.addNode({id: i+"l"});
-    graph.addEdge({
-        s: super_s,
-        t: _,
-        weight: 1
-    });
+    cube_values.set(i+"r", line.split(''));
 }
 
 for(let i = 0; i < nodes_left_count; i++){
     for(let k = 0; k < nodes_right_count; k++){
-        if(right_node_to_value.get(k+'r').indexOf(desired_word[i]) >= 0){
+        if(cube_values.get(k+'r').indexOf(word[i]) >= 0){
             graph.addEdge([{
                 s: i+'l',
                 t: k+'r',
@@ -53,4 +51,4 @@ for(let i = 0; i < nodes_left_count; i++){
 
 const flow = FlowNetwork.FordFulkerson(graph, super_s, super_t);
 
-process.stdout.write(flow.capacity === desired_word.length ? "YES" : "NO");
+process.stdout.write(flow.capacity === word.length ? "YES" : "NO");
